@@ -92,6 +92,35 @@ input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
 .ptb.on label{color:var(--sel)}
 #pc-stage .it-box{cursor:text}
 #pc-stage,#pm-stage{cursor:grab}
+.opts{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 12px;background:var(--panel2);border-bottom:1px solid var(--line);min-height:46px;position:relative;z-index:19}
+.opts select{width:auto;max-width:170px}
+.opts .oi{display:flex;align-items:center;gap:4px}.opts .oi input{width:68px}.opts .oi span{color:var(--mute);font-size:12px}
+.opts .oc{width:42px}
+.optl{font-size:12px;color:var(--mute);margin-right:4px;white-space:nowrap}
+.opts .sp{flex:1}.opts .lk{font-size:12px}
+.tg{height:30px;min-width:32px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--panel);border-radius:6px;cursor:pointer;color:var(--ink)}
+.tg.on{background:var(--acc);color:var(--acc-ink);border-color:transparent}
+.seg{display:inline-flex;gap:2px}
+.preview .opts{display:none}
+.ct-text #c-stage,.ct-text #c-stage .it{cursor:text}
+.ct-hand #c-stage,.ct-hand #c-stage .it{cursor:grab}
+.it-text{min-width:.4em;min-height:1em}
+.ttext{overflow-wrap:anywhere;outline:none;min-height:1em}
+.it.inl{outline:calc(1px*var(--iz,1)) dashed var(--sel)!important}
+.it .ttext[contenteditable],.it .btext[contenteditable]{user-select:text;-webkit-user-select:text;cursor:text;outline:none;caret-color:var(--sel)}
+.it-btn{display:flex;align-items:center;justify-content:center;user-select:none;line-height:1;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+#pc-stage .it-btn,.preview #c-stage .it-btn{cursor:pointer}
+#pc-stage .it-btn:active,.preview #c-stage .it-btn:active{filter:brightness(1.3)}
+.it-num .nval{flex:1;display:flex;align-items:center;font-size:1.3em;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;min-height:0}
+.it-num .nval small{font-size:.5em;opacity:.7;margin-left:.25em}
+.nbar{height:16%;min-height:4px;border-radius:999px;overflow:hidden;margin-top:.15em;flex:none}.nbar i{display:block;height:100%;border-radius:inherit}
+.it.sel.locked{outline-style:dashed}
+.tghost{position:absolute;display:none;border:calc(1px*var(--iz,1)) dashed var(--sel);pointer-events:none}
+.lnk{border:1px solid var(--line);border-radius:8px;padding:6px;margin:6px 0;background:var(--panel2)}
+.lrow{display:flex;gap:4px;align-items:center;margin-top:4px}.lrow select{flex:2}.lrow input{flex:1;min-width:48px}.pl{color:var(--mute)}
+.lx{margin:4px 0 0!important}
+.pnum{display:flex;gap:4px}.pnum input{text-align:center}.pnum .btn{width:36px;justify-content:center;padding:0;flex:none}
+.tpadds{display:flex}.tpadds .tpadd{flex:1}.tpadds .tpadd+.tpadd{border-left:1px solid var(--line)}
 /* editor bars */
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);z-index:20;position:relative}
 .bar .title-in{width:220px;font-weight:600;background:transparent;border-color:transparent}
@@ -325,6 +354,7 @@ input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
     <button class="btn ghost sm" id="c-back">← World</button>
     <input class="title-in" id="c-name" aria-label="Template name">
     <span class="dims" id="c-dims"></span>
+    <div class="grp seg"><button class="btn sm" data-ctool="move" title="Move (V)">Move</button><button class="btn sm" data-ctool="text" title="Text (T)">Text</button><button class="btn sm" data-ctool="hand" title="Hand (H)">Hand</button></div>
     <div class="sp"></div>
     <div class="grp"><button class="btn sm" id="c-undo" title="Undo (Ctrl+Z)">Undo</button><button class="btn sm" id="c-redo" title="Redo (Ctrl+Shift+Z)">Redo</button></div>
     <div class="grp"><button class="btn sm" id="c-zout" title="Zoom out">−</button><span class="zl" id="c-zl">100%</span><button class="btn sm" id="c-zin" title="Zoom in">+</button><button class="btn sm" id="c-fit">Fit</button></div>
@@ -332,8 +362,9 @@ input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
     <button class="btn sm ghost" id="c-resetw">Reset windows</button>
     <span class="status"></span>
   </header>
+  <div class="opts" id="c-opts"></div>
   <div class="stage editing" id="c-stage"><div class="world" id="c-world"></div>
-    <div class="hint">Drag to move · corner handle resizes · scroll to zoom · Space-drag or middle mouse to pan · Double-click a text box to edit its text</div>
+    <div class="hint">V move · T text · H hand · double-click text to type on the card · Lock pins things to images · scroll to zoom</div>
   </div>
   <div class="wins" id="c-wins"></div>
 </section>
@@ -438,7 +469,7 @@ function bindForm(root,getTarget,after,push){
   root.addEventListener('pointerdown',e=>{if(isCtl(e.target))push()});
   root.addEventListener('input',e=>{const t=e.target,k=t.dataset.k,ak=t.dataset.allk;if(!k&&!ak)return;
     let v=t.type==='checkbox'?t.checked:(t.type==='number'||t.type==='range')?parseFloat(t.value):t.value;
-    if(typeof v==='number'&&isNaN(v))return;const o=getTarget(t);if(!o)return;
+    if(t.dataset.null&&t.value==='')v=null;else if(typeof v==='number'&&isNaN(v))return;const o=getTarget(t);if(!o)return;
     if(k)setPath(o,k,v);else(o.boxes||[]).forEach(b=>b[ak]=v);after(t,k||ak)});
 }
 
@@ -457,7 +488,30 @@ const ORN_NAMES={corner:'Corner',divider:'Divider',frame:'Frame',banner:'Banner'
 
 /* ================= model ================= */
 function newWorld(name,desc){return{id:uid(),name,desc,created:Date.now(),templates:[],maps:[],assets:{}}}
-function newBox(label,fs){return{id:uid(),type:'box',label,text:'',showLabel:true,x:0,y:0,w:100,h:40,color:'#2a1d10',labelColor:'#7a5a32',bg:'#ffffff',bgOpacity:.55,borderW:1,borderColor:'#8a6a3e',radius:8,font:'Spectral',size:fs,align:'left',bold:false,italic:false}}
+function newBox(label,fs){return{id:uid(),type:'box',kind:'text',label,text:'',showLabel:true,x:0,y:0,w:100,h:40,color:'#2a1d10',labelColor:'#7a5a32',bg:'#ffffff',bgOpacity:.55,borderW:1,borderColor:'#8a6a3e',radius:8,font:'Spectral',size:fs,align:'left',bold:false,italic:false,locked:false}}
+function toNumber(b,v){return Object.assign(b,{kind:'number',value:v,min:null,max:null,step:1,showSign:false,style:'number',barColor:'#a8322a',align:'center'})}
+function newNumBox(label,fs){return toNumber(newBox(label,fs),0)}
+function newBtn(label,amount,target,x,y,s){return{id:uid(),type:'btn',label,amount,target,x:R(x),y:R(y),w:s,h:s,rot:0,opacity:1,font:'Inter',size:R(s*.62),color:'#ffffff',bg:'#5a3d1e',bgOpacity:1,borderColor:'#3b2a1a',borderW:0,radius:R(s*.25),bold:true,locked:false,anchor:null}}
+function frameless(g){g.showTitle=false;g.borderW=0;g.bgOpacity=0;return g}
+function attachTo(o,host){o.locked=true;o.anchor=host.id;o.rx=(o.x-host.x)/(host.w||1);o.ry=(o.y-host.y)/(host.h||1)}
+function syncAll(t){const by=new Map(t.items.map(i=>[i.id,i])),done=new Set();
+  const go=(o,d)=>{if(done.has(o.id)||d>10)return;done.add(o.id);if(!o.anchor)return;const hs=by.get(o.anchor);if(!hs){o.anchor=null;return}go(hs,d+1);o.x=R(hs.x+o.rx*hs.w);o.y=R(hs.y+o.ry*hs.h)};
+  t.items.forEach(o=>go(o,0))}
+function numBoxesOf(t){const o=[];t.items.forEach(g=>g.boxes&&g.boxes.forEach(b=>{if(b.kind==='number')o.push({b,g})}));return o}
+function findBoxIn(t,id){for(const g of t.items)if(g.boxes){const b=g.boxes.find(x=>x.id===id);if(b)return b}return null}
+function boxName(t,id){for(const g of t.items)if(g.boxes){const b=g.boxes.find(x=>x.id===id);if(b)return `${g.name} › ${b.label}`}return 'a missing number bar'}
+const nn=v=>v!=null&&v!==''&&!isNaN(+v);
+function clampNum(b,v){v=+v;if(isNaN(v))v=0;if(nn(b.min))v=Math.max(+b.min,v);if(nn(b.max))v=Math.min(+b.max,v);return Math.round(v*100)/100}
+function fmtNum(b,v){v=Math.round((+v||0)*100)/100;return (b.showSign&&v>0?'+':'')+String(v).replace('-','−')}
+function tplAcc(t){return{get:id=>{const b=findBoxIn(t,id);return b?(+b.value||0):0},set:(id,v)=>{const b=findBoxIn(t,id);if(b)b.value=v}}}
+function changeNum(t,acc,id,nv){const seen=new Set();
+  const go=(id,nv)=>{if(seen.has(id))return;seen.add(id);const b=findBoxIn(t,id);if(!b||b.kind!=='number')return;nv=clampNum(b,nv);const old=acc.get(id);acc.set(id,nv);const d=nv-old;
+    (t.links||[]).forEach(l=>{if(l.from!==id||!l.to)return;let v;
+      if(l.mode==='add'){if(!d)return;v=acc.get(l.to)+d*(+l.k||0)}else if(l.mode==='set')v=nv*(+l.k||0)+(+l.c||0);else v=Math.floor((nv-10)/2)+(+l.c||0);
+      go(l.to,v)})};
+  go(id,nv)}
+function recalcLinks(t,acc){[...new Set((t.links||[]).filter(l=>l.mode!=='add').map(l=>l.from))].forEach(f=>changeNum(t,acc,f,acc.get(f)))}
+function pressBtn(t,acc,btn){if(!btn.target||!findBoxIn(t,btn.target)){toast('This button is not connected to a number bar yet');return false}changeNum(t,acc,btn.target,acc.get(btn.target)+(+btn.amount||0));return true}
 function newGroup(name,x,y,w,hh,labels,arr,fs){const g={id:uid(),type:'group',name,x:R(x),y:R(y),w:R(w),h:R(hh),rot:0,opacity:1,bg:'#ffffff',bgOpacity:.18,borderW:2,borderColor:'#5a3d1e',radius:14,showTitle:true,titleColor:'#5a3d1e',titleFont:'Cinzel',titleSize:R(fs*.85),boxes:labels.map(l=>newBox(l,fs))};arrange(g,arr);return g}
 function arrange(g,mode){const n=g.boxes.length;if(!n)return;const pad=12,gap=8,top=g.showTitle?R(g.titleSize*1.25+14):pad;
   const cols=mode==='h'?n:mode==='v'?1:Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols);
@@ -474,10 +528,16 @@ function starterItems(t){const m=t.layout.margin,gap=t.layout.gap,W=t.w-2*m,fs=R
   const g2=newGroup('Abilities',m,y,half,gh,['STR','DEX','CON','INT','WIS','CHA'],'g',fs);
   const g3=newGroup('Vitals',m+half+gap,y,half,gh,['Hit points','Armor class','Speed','Initiative'],'v',fs);y+=g2.h+gap;
   const g4=newGroup('Notes',m,y,W,Math.max(80,t.h-m-y),['Background','Inventory'],'h',fs);
+  g2.boxes.forEach(b=>toNumber(b,10));
+  const [hp,ac,sp,ini]=g3.boxes;toNumber(hp,10);Object.assign(hp,{min:0,max:10,style:'bar',align:'left'});toNumber(ac,10);toNumber(ini,0);ini.showSign=true;sp.text='30 ft';
+  t.links=[{id:uid(),from:g2.boxes[1].id,to:ini.id,mode:'mod',k:1,c:0}];
+  const bs=R(clamp(hp.h*.42,22,80)),gp=R(bs*.25),bx=g3.x+hp.x+hp.w-2*bs-gp-10,by=g3.y+hp.y+R(hp.h*.12);
+  const mi=newBtn('−',-1,hp.id,bx,by,bs),pl=newBtn('+',1,hp.id,bx+bs+gp,by,bs);attachTo(mi,g3);attachTo(pl,g3);
   const cs=R(Math.min(t.w,t.h)*.14);
   t.items.push(g1,g2,g3,g4,
     {id:uid(),type:'orn',orn:'corner',color:'#8a6a3e',x:R(m*.35),y:R(m*.35),w:cs,h:cs,rot:0,opacity:.8},
-    {id:uid(),type:'orn',orn:'corner',color:'#8a6a3e',x:R(t.w-m*.35-cs),y:R(t.h-m*.35-cs),w:cs,h:cs,rot:180,opacity:.8});
+    {id:uid(),type:'orn',orn:'corner',color:'#8a6a3e',x:R(t.w-m*.35-cs),y:R(t.h-m*.35-cs),w:cs,h:cs,rot:180,opacity:.8},mi,pl);
+  recalcLinks(t,tplAcc(t));
 }
 function layoutRects(t){const L=t.layout,m=L.margin,g=L.gap,W=t.w-2*m,H=t.h-2*m;
   switch(L.preset){
@@ -489,9 +549,19 @@ function layoutRects(t){const L=t.layout,m=L.margin,g=L.gap,W=t.w-2*m,H=t.h-2*m;
     default:return[]}
 }
 function fitCSS(f){return{cover:'background-size:cover;background-position:center;background-repeat:no-repeat',contain:'background-size:contain;background-position:center;background-repeat:no-repeat',stretch:'background-size:100% 100%',tile:'background-size:auto;background-repeat:repeat'}[f]||''}
-function boxHTML(b){return `<div data-id="${b.id}" class="it it-box" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;background:${hexA(b.bg,b.bgOpacity)};border:${b.borderW}px solid ${b.borderColor};border-radius:${b.radius}px;color:${b.color};font-family:${fontCSS(b.font)};font-size:${b.size}px;text-align:${b.align};font-weight:${b.bold?700:400};font-style:${b.italic?'italic':'normal'}">${b.showLabel?`<div class="blabel" style="color:${b.labelColor};font-size:${Math.max(10,R(b.size*.55))}px">${esc(b.label)}</div>`:''}<div class="btext">${esc(b.text)}</div></div>`}
-function itemHTML(world,it){
-  const base=`data-id="${it.id}" class="it it-${it.type}" style="left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;transform:rotate(${it.rot||0}deg);opacity:${it.opacity??1};`;
+const JC={left:'flex-start',center:'center',right:'flex-end'};
+function boxHTML(b){const num=b.kind==='number';
+  const lab=b.showLabel?`<div class="blabel" style="color:${b.labelColor};font-size:${Math.max(10,R(b.size*.55))}px">${esc(b.label)}</div>`:'';let inner;
+  if(num){const v=+b.value||0,hasMax=nn(b.max);let bar='';
+    if(b.style==='bar'&&hasMax){const lo=nn(b.min)?+b.min:0,pct=+b.max>lo?clamp((v-lo)/(+b.max-lo)*100,0,100):0;bar=`<div class="nbar" style="background:${hexA(b.color,.15)}"><i style="width:${pct}%;background:${b.barColor}"></i></div>`}
+    inner=`<div class="nval" style="justify-content:${JC[b.align]||'center'}">${esc(fmtNum(b,v))}${b.style==='bar'&&hasMax?`<small>/ ${esc(String(b.max))}</small>`:''}</div>${bar}`}
+  else inner=`<div class="btext">${esc(b.text)}</div>`;
+  return `<div data-id="${b.id}" class="it it-box${num?' it-num':''}${b.locked?' locked':''}" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;background:${hexA(b.bg,b.bgOpacity)};border:${b.borderW}px solid ${b.borderColor};border-radius:${b.radius}px;color:${b.color};font-family:${fontCSS(b.font)};font-size:${b.size}px;text-align:${b.align};font-weight:${b.bold?700:400};font-style:${b.italic?'italic':'normal'}">${lab}${inner}</div>`}
+function itemHTML(world,it){const lk=it.locked?' locked':'';
+  if(it.type==='text'){const st=`left:${it.x}px;top:${it.y}px;${it.auto?'':`width:${it.w}px;height:${it.h}px;`}transform:rotate(${it.rot||0}deg);opacity:${it.opacity??1};font-family:${fontCSS(it.font)};font-size:${it.size}px;color:${it.color};text-align:${it.align};font-weight:${it.bold?700:400};font-style:${it.italic?'italic':'normal'};line-height:${it.lh||1.2};letter-spacing:${it.ls||0}em;white-space:${it.auto?'pre':'pre-wrap'};${it.strokeW?`-webkit-text-stroke:${it.strokeW*2}px ${it.strokeColor};paint-order:stroke fill;`:''}${it.shadow?'text-shadow:0 2px 6px rgba(0,0,0,.55);':''}`;
+    return `<div data-id="${it.id}" class="it it-text${lk}" style="${st}"><div class="ttext">${it.text?esc(it.text):'&#8203;'}</div></div>`}
+  const base=`data-id="${it.id}" class="it it-${it.type}${lk}" style="left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;transform:rotate(${it.rot||0}deg);opacity:${it.opacity??1};`;
+  if(it.type==='btn')return `<div ${base}background:${hexA(it.bg,it.bgOpacity??1)};border:${it.borderW}px solid ${it.borderColor};border-radius:${it.radius}px;color:${it.color};font-family:${fontCSS(it.font)};font-size:${it.size}px;font-weight:${it.bold?700:400}"><span>${esc(it.label)}</span></div>`;
   if(it.type==='image')return `<div ${base}"><img src="${world.assets[it.asset]||''}" draggable="false" alt="" style="transform:scale(${it.flipX?-1:1},${it.flipY?-1:1})"></div>`;
   if(it.type==='orn')return `<div ${base}">${(ORN[it.orn]||ORN.star)(it.color)}</div>`;
   if(it.type==='shape')return `<div ${base}background:${hexA(it.fill,it.fillOpacity??1)};border:${it.strokeW}px solid ${it.stroke};border-radius:${it.shape==='ellipse'?'50%':it.radius+'px'}"></div>`;
@@ -565,35 +635,39 @@ $('#wd-newmap').onclick=()=>{const m=modal('New map',`<label class="lbl">Map nam
   wireSizes(m,i=>{$('#nm-grid',m).checked=MAP_SIZES[i][3];$('#nm-name',m).value=MAP_SIZES[i][0].replace(/,.*/,'')})};
 
 /* ================= CARD EDITOR ================= */
-const CE={tpl:null,sel:null,zoom:1,pan:{x:0,y:0},hist:[],fut:[],snap:true,preview:false};
-const cStage=$('#c-stage'),cWorld=$('#c-world');
+const CE={tpl:null,sel:null,zoom:1,pan:{x:0,y:0},hist:[],fut:[],snap:true,preview:false,pv:null,tool:'move',editing:null,rer:false,
+  td:{font:'Spectral',size:40,color:'#2a1d10',bold:false,italic:false,align:'left'}};
+const cStage=$('#c-stage'),cWorld=$('#c-world'),cOpts=$('#c-opts');
 const cTools=h('<div></div>'),cProps=h('<div></div>'),cText=h('<div></div>');
 const cWins=[
-  makeWin($('#c-wins'),'c-tools','Card tools',{x:()=>12,y:()=>64,w:280,maxh:'calc(52vh - 40px)'},cTools),
-  makeWin($('#c-wins'),'c-props','Properties',{x:()=>12,y:()=>R(innerHeight*.52)+76,w:280,maxh:'calc(48vh - 130px)'},cProps),
-  makeWin($('#c-wins'),'c-text','Text',{x:()=>Math.max(300,innerWidth-332),y:()=>64,w:320,maxh:'calc(100vh - 130px)'},cText)];
+  makeWin($('#c-wins'),'c-tools','Card tools',{x:()=>12,y:()=>112,w:280,maxh:'calc(50vh - 70px)'},cTools),
+  makeWin($('#c-wins'),'c-props','Properties',{x:()=>12,y:()=>R(innerHeight*.5)+96,w:280,maxh:'calc(50vh - 150px)'},cProps),
+  makeWin($('#c-wins'),'c-text','Text and numbers',{x:()=>Math.max(300,innerWidth-332),y:()=>112,w:320,maxh:'calc(100vh - 180px)'},cText)];
 $('#c-resetw').onclick=()=>cWins.forEach(w=>w._reset());
-function openCard(t){CE.tpl=t;CE.sel=null;CE.hist=[];CE.fut=[];show('card')}
-screens.card={enter(){$('#c-name').value=CE.tpl.name;renderTools();renderCard();renderProps();renderText();requestAnimationFrame(fitCard)},leave(){flush()}};
+const baseFs=()=>R(clamp(Math.min(CE.tpl.w,CE.tpl.h)*.028,14,40));
+function openCard(t){t.links=t.links||[];CE.tpl=t;CE.sel=null;CE.hist=[];CE.fut=[];CE.editing=null;CE.preview=false;CE.pv=null;
+  $('#scr-card').classList.remove('preview');$('#c-prev').classList.remove('on');CE.td.size=R(clamp(Math.min(t.w,t.h)*.035,14,72));show('card')}
+screens.card={enter(){$('#c-name').value=CE.tpl.name;setCTool(CE.tool);renderTools();renderCard();renderProps();renderText();renderOpts();requestAnimationFrame(fitCard)},leave(){commitInline();flush()}};
 $('#c-back').onclick=()=>show('world');
 $('#c-name').oninput=e=>{CE.tpl.name=e.target.value;save()};
-function findItem(id){for(const it of CE.tpl.items){if(it.id===id)return{item:it,parent:null};if(it.boxes){const b=it.boxes.find(x=>x.id===id);if(b)return{item:b,parent:it}}}return null}
+function findItem(id){if(!id||!CE.tpl)return null;for(const it of CE.tpl.items){if(it.id===id)return{item:it,parent:null};if(it.boxes){const b=it.boxes.find(x=>x.id===id);if(b)return{item:b,parent:it}}}return null}
 function pushHist(){const s=JSON.stringify(CE.tpl);if(CE.hist[CE.hist.length-1]===s)return;CE.hist.push(s);if(CE.hist.length>80)CE.hist.shift();CE.fut=[];updUndo()}
-function replaceTpl(s){const t=CE.tpl,o=JSON.parse(s);Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,o);if(CE.sel&&!findItem(CE.sel))CE.sel=null;renderAllCard();save()}
-function undo(){const cur=JSON.stringify(CE.tpl);while(CE.hist.length&&CE.hist[CE.hist.length-1]===cur)CE.hist.pop();if(!CE.hist.length)return;CE.fut.push(cur);replaceTpl(CE.hist.pop())}
-function redo(){if(!CE.fut.length)return;CE.hist.push(JSON.stringify(CE.tpl));replaceTpl(CE.fut.pop())}
+function replaceTpl(s){CE.editing=null;const t=CE.tpl,o=JSON.parse(s);Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,o);if(CE.sel&&!findItem(CE.sel))CE.sel=null;renderAllCard();save()}
+function undo(){commitInline();const cur=JSON.stringify(CE.tpl);while(CE.hist.length&&CE.hist[CE.hist.length-1]===cur)CE.hist.pop();if(!CE.hist.length)return;CE.fut.push(cur);replaceTpl(CE.hist.pop())}
+function redo(){commitInline();if(!CE.fut.length)return;CE.hist.push(JSON.stringify(CE.tpl));replaceTpl(CE.fut.pop())}
 function updUndo(){$('#c-undo').disabled=!CE.hist.length;$('#c-redo').disabled=!CE.fut.length}
 $('#c-undo').onclick=undo;$('#c-redo').onclick=redo;
-function renderAllCard(){$('#c-name').value=CE.tpl.name;renderTools();renderCard();renderProps();renderText()}
-function renderCard(){cWorld.innerHTML=cardHTML(W,CE.tpl);
-  if(CE.sel){const el=cWorld.querySelector(`[data-id="${CE.sel}"]`);if(el){el.classList.add('sel');el.insertAdjacentHTML('beforeend','<div class="hdl"></div>')}}
+function renderAllCard(){$('#c-name').value=CE.tpl.name;renderTools();renderCard();renderProps();renderText();renderOpts()}
+function renderCard(){const t=CE.preview&&CE.pv?CE.pv:CE.tpl;CE.editing=null;syncAll(t);CE.rer=true;cWorld.innerHTML=cardHTML(W,t);CE.rer=false;
+  if(!CE.preview){$$('.it-text',cWorld).forEach(n=>{const f=findItem(n.dataset.id);if(f&&f.item.auto){f.item.w=n.offsetWidth;f.item.h=n.offsetHeight}});
+    if(CE.sel){const el=cWorld.querySelector(`[data-id="${CE.sel}"]`),f=findItem(CE.sel);if(el){el.classList.add('sel');if(f&&!f.item.locked)el.insertAdjacentHTML('beforeend','<div class="hdl"></div>')}}}
   $('#c-dims').textContent=`${CE.tpl.w} × ${CE.tpl.h}px`;updUndo()}
 function applyCView(){cWorld.style.transform=`translate(${CE.pan.x}px,${CE.pan.y}px) scale(${CE.zoom})`;cStage.style.setProperty('--iz',1/CE.zoom);$('#c-zl').textContent=R(CE.zoom*100)+'%'}
 function fitCard(){const r=cStage.getBoundingClientRect();CE.zoom=clamp(Math.min((r.width-80)/CE.tpl.w,(r.height-80)/CE.tpl.h),.05,4);CE.pan={x:(r.width-CE.tpl.w*CE.zoom)/2,y:(r.height-CE.tpl.h*CE.zoom)/2};applyCView()}
 function zoomAt(view,stage,apply,cx,cy,f){const r=stage.getBoundingClientRect(),px=cx-r.left,py=cy-r.top,nz=clamp(view.zoom*f,.05,8);view.pan.x=px-(px-view.pan.x)*(nz/view.zoom);view.pan.y=py-(py-view.pan.y)*(nz/view.zoom);view.zoom=nz;apply()}
 const zoomCenter=(view,stage,apply,f)=>{const r=stage.getBoundingClientRect();zoomAt(view,stage,apply,r.left+r.width/2,r.top+r.height/2,f)};
 $('#c-zin').onclick=()=>zoomCenter(CE,cStage,applyCView,1.25);$('#c-zout').onclick=()=>zoomCenter(CE,cStage,applyCView,.8);$('#c-fit').onclick=fitCard;
-$('#c-prev').onclick=()=>{CE.preview=!CE.preview;$('#scr-card').classList.toggle('preview',CE.preview);$('#c-prev').classList.toggle('on',CE.preview)};
+$('#c-prev').onclick=()=>{commitInline();CE.preview=!CE.preview;CE.pv=CE.preview?JSON.parse(JSON.stringify(CE.tpl)):null;$('#scr-card').classList.toggle('preview',CE.preview);$('#c-prev').classList.toggle('on',CE.preview);renderCard();if(CE.preview)toast('Preview: try the + and − buttons. Nothing you change here is saved.')};
 cStage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(CE,cStage,applyCView,e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))},{passive:false});
 const toCard=e=>{const r=cStage.getBoundingClientRect();return{x:(e.clientX-r.left-CE.pan.x)/CE.zoom,y:(e.clientY-r.top-CE.pan.y)/CE.zoom}};
 function viewCenterCard(){const r=cStage.getBoundingClientRect();return{x:clamp((r.width/2-CE.pan.x)/CE.zoom,0,CE.tpl.w),y:clamp((r.height/2-CE.pan.y)/CE.zoom,0,CE.tpl.h)}}
@@ -601,35 +675,122 @@ let spaceDown=false;
 function startPan(e,view,stage,apply){stage.classList.add('panning');const sx=e.clientX,sy=e.clientY,ox=view.pan.x,oy=view.pan.y;stage.setPointerCapture(e.pointerId);
   const mv=ev=>{view.pan.x=ox+ev.clientX-sx;view.pan.y=oy+ev.clientY-sy;apply()};const up=()=>{stage.classList.remove('panning');stage.removeEventListener('pointermove',mv);stage.removeEventListener('pointerup',up)};
   stage.addEventListener('pointermove',mv);stage.addEventListener('pointerup',up)}
-function selectC(id,o={}){CE.sel=id;renderCard();renderProps();if(o.text!==false)markText()}
+function selectC(id){CE.sel=id;renderCard();renderProps();renderOpts();markText()}
+function setCTool(t){CE.tool=t;const s=$('#scr-card');['move','text','hand'].forEach(x=>s.classList.toggle('ct-'+x,x===t));$$('[data-ctool]').forEach(b=>b.classList.toggle('on',b.dataset.ctool===t));renderOpts()}
+$$('[data-ctool]').forEach(b=>b.onclick=()=>{commitInline();setCTool(b.dataset.ctool)});
+/* --- lock / attach --- */
+function hostName(id){const o=CE.tpl.items.find(i=>i.id===id);return o?(o.type==='image'?(o.name||'image'):o.name||'group'):''}
+function reanchor(o){const hs=CE.tpl.items.find(i=>i.id===o.anchor);if(hs){o.rx=(o.x-hs.x)/(hs.w||1);o.ry=(o.y-hs.y)/(hs.h||1)}}
+function syncDeps(host,d=0){if(d>8)return;CE.tpl.items.forEach(o=>{if(o.anchor===host.id){o.x=R(host.x+o.rx*host.w);o.y=R(host.y+o.ry*host.h);const n=cWorld.querySelector(`[data-id="${o.id}"]`);if(n){n.style.left=o.x+'px';n.style.top=o.y+'px'}syncDeps(o,d+1)}})}
+function findHost(it){const cx=it.x+it.w/2,cy=it.y+it.h/2,L=CE.tpl.items;
+  for(let i=L.length-1;i>=0;i--){const o=L[i];if(o===it||!(o.type==='image'||o.type==='group'))continue;if(it.type==='group'&&o.type==='group')continue;
+    let p=o,bad=false,d=0;while(p&&p.anchor&&d++<10){if(p.anchor===it.id){bad=true;break}p=L.find(x=>x.id===p.anchor)}if(bad)continue;
+    if(cx>=o.x&&cx<=o.x+o.w&&cy>=o.y&&cy<=o.y+o.h)return o}return null}
+function toggleLock(){const f=CE.sel&&findItem(CE.sel);if(!f)return;const it=f.item;pushHist();
+  if(it.locked){it.locked=false;it.anchor=null;toast('Unlocked. You can move it again.')}
+  else if(f.parent){it.locked=true;toast('Locked in place')}
+  else{const hs=findHost(it);if(hs){attachTo(it,hs);toast(`Locked to “${hostName(hs.id)}”. It now moves with it.`)}else{it.locked=true;toast('Locked in place')}}
+  save();renderCard();renderProps();renderOpts()}
+/* --- inline text editing (Photoshop-style) --- */
+const isTextual=it=>it&&(it.type==='text'||(it.type==='box'&&it.kind!=='number'));
+function startInline(id,ev,o={}){const f=findItem(id);if(!f||!isTextual(f.item))return;const it=f.item;
+  if(!o.noHist)pushHist();CE.sel=id;renderCard();renderProps();markText();renderOpts();
+  const node=cWorld.querySelector(`[data-id="${id}"]`);if(!node)return;const tx=node.querySelector(it.type==='text'?'.ttext':'.btext');if(!tx)return;
+  node.classList.add('inl');$$('.hdl',node).forEach(x=>x.remove());if(!it.text)tx.textContent='';
+  tx.contentEditable='plaintext-only';if(tx.contentEditable!=='plaintext-only')tx.contentEditable='true';tx.spellcheck=false;
+  CE.editing=id;tx.focus();
+  const sel=getSelection();let r=null;
+  if(ev&&document.caretRangeFromPoint){r=document.caretRangeFromPoint(ev.clientX,ev.clientY);if(r&&!tx.contains(r.startContainer))r=null}
+  if(!r){r=document.createRange();r.selectNodeContents(tx);r.collapse(false)}
+  sel.removeAllRanges();sel.addRange(r);
+  tx.addEventListener('input',()=>{it.text=tx.innerText.replace(/​/g,'').replace(/\n$/,'');if(it.type==='text'&&it.auto){it.w=node.offsetWidth;it.h=node.offsetHeight}
+    const ta=$(`textarea[data-id="${id}"]`,cText);if(ta)ta.value=it.text;const pt=$('[data-k="text"]',cProps);if(pt)pt.value=it.text;save()});
+  tx.addEventListener('blur',()=>{if(!CE.rer&&CE.editing===id)commitInline()});
+  tx.addEventListener('keydown',e=>{if(e.key==='Escape'||(e.key==='Enter'&&(e.ctrlKey||e.metaKey))){e.preventDefault();commitInline()}})}
+function commitInline(){const id=CE.editing;if(!id)return;CE.editing=null;const f=findItem(id);
+  if(f&&f.item.type==='text'&&!f.item.text.trim()){CE.tpl.items=CE.tpl.items.filter(i=>i!==f.item);if(CE.sel===id)CE.sel=null}
+  try{getSelection().removeAllRanges()}catch(e){}
+  renderCard();renderProps();renderText();renderOpts();save()}
+function newText(text,x,y){const d=CE.td;return{id:uid(),type:'text',text,font:d.font,size:d.size,color:d.color,bold:d.bold,italic:d.italic,align:d.align,lh:1.2,ls:0,strokeW:0,strokeColor:'#000000',shadow:false,x:R(x),y:R(y),w:d.size,h:R(d.size*1.2),auto:true,rot:0,opacity:1,locked:false,anchor:null}}
+function textToolDown(e,el){
+  if(el){const f=findItem(el.dataset.id);if(f&&isTextual(f.item)){startInline(f.item.id,e);return}}
+  const s=toCard(e),gh=h('<div class="tghost"></div>');let rect=null;cWorld.append(gh);cStage.setPointerCapture(e.pointerId);
+  const mv=ev=>{const p=toCard(ev);if(Math.abs(p.x-s.x)*CE.zoom>5||Math.abs(p.y-s.y)*CE.zoom>5){rect={x:Math.min(s.x,p.x),y:Math.min(s.y,p.y),w:Math.abs(p.x-s.x),h:Math.abs(p.y-s.y)};gh.style.cssText=`display:block;left:${rect.x}px;top:${rect.y}px;width:${rect.w}px;height:${rect.h}px`}};
+  const up=()=>{cStage.removeEventListener('pointermove',mv);cStage.removeEventListener('pointerup',up);gh.remove();pushHist();
+    const it=newText('',rect?rect.x:s.x,rect?rect.y:s.y-CE.td.size*.6);if(rect){it.auto=false;it.w=R(Math.max(30,rect.w));it.h=R(Math.max(CE.td.size*1.3,rect.h))}
+    CE.tpl.items.push(it);startInline(it.id,null,{noHist:true})};
+  cStage.addEventListener('pointermove',mv);cStage.addEventListener('pointerup',up)}
+/* --- stage pointer --- */
 cStage.addEventListener('pointerdown',e=>{
   if(e.target.closest('.hint'))return;
-  if(e.button===1||spaceDown){e.preventDefault();startPan(e,CE,cStage,applyCView);return}
+  if(e.target.closest('[contenteditable="true"],[contenteditable="plaintext-only"]'))return;
+  if(e.button===1||spaceDown||CE.tool==='hand'){e.preventDefault();startPan(e,CE,cStage,applyCView);return}
   if(e.button!==0)return;
-  if(CE.preview){startPan(e,CE,cStage,applyCView);return}
+  if(CE.preview){const b=e.target.closest('.it-btn');if(b){const it=CE.pv.items.find(i=>i.id===b.dataset.id);if(it&&pressBtn(CE.pv,tplAcc(CE.pv),it))renderCard();return}startPan(e,CE,cStage,applyCView);return}
   const hd=e.target.closest('.hdl'),el=e.target.closest('.it');
+  if(CE.editing)commitInline();
+  if(CE.tool==='text'){e.preventDefault();textToolDown(e,el);return}
   if(!el){if(!e.target.closest('.card'))startPan(e,CE,cStage,applyCView);if(CE.sel)selectC(null);return}
   const id=el.dataset.id,f=findItem(id);if(!f)return;const it=f.item;
   if(CE.sel!==id)selectC(id);
+  if(it.locked){let warned=false;const mv=ev=>{if(!warned&&Math.hypot(ev.clientX-e.clientX,ev.clientY-e.clientY)>6){warned=true;toast('This is locked. Click Unlock in the bar above to move it.')}};
+    const up=()=>{cStage.removeEventListener('pointermove',mv);cStage.removeEventListener('pointerup',up)};cStage.addEventListener('pointermove',mv);cStage.addEventListener('pointerup',up);return}
   pushHist();const s=toCard(e),st={x:it.x,y:it.y,w:it.w,h:it.h},mode=hd?'resize':'move',ratio=it.w/it.h;
+  if(mode==='resize'&&it.type==='text'&&it.auto){it.auto=false;const n=cWorld.querySelector(`[data-id="${id}"]`);n.style.whiteSpace='pre-wrap'}
   cStage.setPointerCapture(e.pointerId);
   const mv=ev=>{const p=toCard(ev);let dx=p.x-s.x,dy=p.y-s.y;const sn=v=>CE.snap&&!ev.altKey?R(v/5)*5:R(v);
-    const node=cWorld.querySelector(`[data-id="${id}"]`);
+    const node=cWorld.querySelector(`[data-id="${id}"]`);if(!node)return;
     if(mode==='move'){if(ev.shiftKey){Math.abs(dx)>Math.abs(dy)?dy=0:dx=0}it.x=sn(st.x+dx);it.y=sn(st.y+dy);node.style.left=it.x+'px';node.style.top=it.y+'px'}
-    else{it.w=Math.max(10,sn(st.w+dx));it.h=Math.max(10,sn(st.h+dy));if((it.type==='image')!==ev.shiftKey){it.h=Math.max(10,R(it.w/ratio))}node.style.width=it.w+'px';node.style.height=it.h+'px'}};
-  const up=()=>{cStage.removeEventListener('pointermove',mv);cStage.removeEventListener('pointerup',up);if(st.x!==it.x||st.y!==it.y||st.w!==it.w||st.h!==it.h){save();renderProps()}};
+    else{it.w=Math.max(10,sn(st.w+dx));it.h=Math.max(10,sn(st.h+dy));if((it.type==='image')!==ev.shiftKey&&it.type!=='text'){it.h=Math.max(10,R(it.w/ratio))}node.style.width=it.w+'px';node.style.height=it.h+'px'}
+    if(!f.parent)syncDeps(it)};
+  const up=()=>{cStage.removeEventListener('pointermove',mv);cStage.removeEventListener('pointerup',up);if(st.x!==it.x||st.y!==it.y||st.w!==it.w||st.h!==it.h){save();renderCard();renderProps()}};
   cStage.addEventListener('pointermove',mv);cStage.addEventListener('pointerup',up)});
-cStage.addEventListener('dblclick',e=>{const el=e.target.closest('.it-box');if(!el)return;const ta=$(`textarea[data-id="${el.dataset.id}"]`,cText);if(ta){const w=ta.closest('.win');w.classList.remove('min');ta.scrollIntoView({block:'center'});ta.focus()}});
+cStage.addEventListener('dblclick',e=>{if(CE.preview)return;const el=e.target.closest('.it-text,.it-box');if(!el)return;const f=findItem(el.dataset.id);if(!f)return;
+  if(isTextual(f.item)){startInline(f.item.id,e);return}
+  const inp=$(`[data-numval="${f.item.id}"]`,cText);if(inp){inp.closest('.win').classList.remove('min');inp.scrollIntoView({block:'center'});inp.focus();inp.select()}});
 cStage.addEventListener('dragover',e=>e.preventDefault());
 cStage.addEventListener('drop',e=>{e.preventDefault();const p=toCard(e);addImages([...e.dataTransfer.files],p)});
-function addItem(it){pushHist();CE.tpl.items.push(it);CE.sel=it.id;save();renderCard();renderProps();renderText()}
+function addItem(it){pushHist();CE.tpl.items.push(it);CE.sel=it.id;save();renderCard();renderProps();renderText();renderOpts()}
 function addImages(files,at){readImages(files,(src,nw,nh,name)=>{const c=at||viewCenterCard(),s=Math.min(1,CE.tpl.w*.5/nw,CE.tpl.h*.5/nh),w=R(nw*s),hh=R(nh*s);
-  addItem({id:uid(),type:'image',name,asset:(()=>{const id='a'+uid();W.assets[id]=src;return id})(),x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1,flipX:false,flipY:false})})}
+  addItem({id:uid(),type:'image',name,asset:(()=>{const id='a'+uid();W.assets[id]=src;return id})(),x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1,flipX:false,flipY:false,locked:false,anchor:null})})}
+function addField(kind){const t=CE.tpl,c=viewCenterCard(),fs=baseFs(),f=CE.sel&&findItem(CE.sel),g=f?(f.parent||(f.item.type==='group'?f.item:null)):null;
+  const mk=(l,size)=>kind==='number'?newNumBox(l,size):newBox(l,size);
+  if(g){pushHist();const last=g.boxes[g.boxes.length-1];const b=mk(kind==='number'?'Number':'Field '+(g.boxes.length+1),last?last.size:fs);
+    if(last){Object.assign(b,{x:last.x,y:Math.min(g.h-30,last.y+last.h+8),w:last.w,h:last.h});['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius'].forEach(k=>b[k]=last[k])}else Object.assign(b,{x:12,y:12,w:g.w-24,h:R(fs*2.8)});
+    g.boxes.push(b);CE.sel=b.id;save();renderCard();renderProps();renderText();renderOpts()}
+  else{const w=R(kind==='number'?fs*6:t.w*.4),hh=R(fs*(kind==='number'?4:3.2));const g2=frameless(newGroup(kind==='number'?'Number':'Text',c.x-w/2,c.y-hh/2,w,hh,[],'v',fs));
+    const b=mk(kind==='number'?'Number':'Field',fs);Object.assign(b,{x:0,y:0,w,h:hh});g2.boxes.push(b);addItem(g2);selectC(b.id);renderText()}}
+
+/* --- options bar (like Photoshop's) --- */
+const alignIcon=a=>`<svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="true"><path d="${a==='left'?'M0 1h14M0 5h9M0 9h12':a==='center'?'M0 1h14M2.5 5h9M1 9h12':'M0 1h14M5 5h9M2 9h12'}" stroke="currentColor" stroke-width="1.6"/></svg>`;
+function optTarget(){const f=CE.sel&&findItem(CE.sel),it=f&&f.item;return it&&(it.type==='text'||it.type==='box'||it.type==='btn')?it:(CE.tool==='text'?CE.td:null)}
+function renderOpts(){if(!CE.tpl)return;const f=CE.sel&&findItem(CE.sel),it=f&&f.item,tg=optTarget();let s='';
+  if(tg){const nm=tg===CE.td?'New text':it.type==='text'?'Text':it.type==='btn'?'Button':it.kind==='number'?'Number bar':'Text box';
+    s+=`<span class="optl">${nm}</span><select data-k="font" title="Font">${fontOpts.map(([a])=>`<option value="${a}"${a===tg.font?' selected':''}>${a}</option>`).join('')}</select>
+    <label class="oi" title="Font size"><input type="number" data-k="size" value="${tg.size}" min="4"><span>px</span></label>
+    <input type="color" class="oc" data-k="color" value="${tg.color}" title="Colour">
+    <label class="tg${tg.bold?' on':''}" title="Bold"><input type="checkbox" data-k="bold"${tg.bold?' checked':''} hidden><b>B</b></label>
+    ${it&&it.type==='btn'?'':`<label class="tg${tg.italic?' on':''}" title="Italic"><input type="checkbox" data-k="italic"${tg.italic?' checked':''} hidden><i style="font-family:Georgia,serif">I</i></label>
+    <span class="seg">${['left','center','right'].map(a=>`<button class="tg${tg.align===a?' on':''}" data-align="${a}" title="Align ${a}">${alignIcon(a)}</button>`).join('')}</span>`}`}
+  else if(it)s+=`<span class="optl">${esc(it.type==='group'?it.name:it.type==='image'?(it.name||'Image'):ORN_NAMES[it.orn]||(it.type==='shape'?'Shape':'Item'))}</span>`;
+  if(it)s+=`<span class="sp"></span><span class="muted lk">${it.locked?(it.anchor?'Locked to “'+esc(hostName(it.anchor))+'”':'Locked in place'):(f.parent?'':'Lock pins it. On an image or group, it moves with it.')}</span><button class="btn sm${it.locked?' on':''}" data-lock>${it.locked?'Unlock':'Lock'}</button>`;
+  if(!s)s=`<span class="muted">${CE.tool==='text'?'Click the card to type, or drag to draw a text box.':'Select something to edit it, or press T and click the card to add text.'}</span>`;
+  cOpts.innerHTML=s}
+bindForm(cOpts,optTarget,(t,k)=>{const tg=optTarget();if(tg!==CE.td){if(tg.type==='text')CE.td[k]=tg[k];renderCard();renderProps();save()}if(t.type==='checkbox')renderOpts()},pushHist);
+cOpts.addEventListener('pointerdown',e=>{if(e.target.closest('label.tg,[data-align]'))pushHist()});
+cOpts.addEventListener('click',e=>{const a=e.target.closest('[data-align]');if(a){const tg=optTarget();if(!tg)return;tg.align=a.dataset.align;if(tg!==CE.td){if(tg.type==='text')CE.td.align=tg.align;renderCard();renderProps();save()}renderOpts();return}
+  if(e.target.closest('[data-lock]'))toggleLock()});
 
 /* --- card tools window --- */
 let ornColor='#8a6a3e';
 function renderTools(){const t=CE.tpl,L=t.layout,b=t.bg;
   cTools.innerHTML=`
+  <div class="sec"><h4>Text and numbers</h4><div class="btns"><button class="btn sm pri" data-act="ttool">Text tool (T)</button><button class="btn sm" data-act="group">Text group</button><button class="btn sm" data-act="box">Text box</button><button class="btn sm" data-act="num">Number bar</button><button class="btn sm" data-act="pm">+ / − button</button></div>
+    <p class="tip">Boxes and number bars go into the selected group, or a new one. To put text on a picture, select the picture first.</p></div>
+  <div class="sec"><h4>Images and decorations</h4>
+    <div class="btns"><button class="btn sm pri" data-act="png">Add image (PNG, JPG)</button><button class="btn sm" data-act="rect">Rectangle</button><button class="btn sm" data-act="ellipse">Ellipse</button><button class="btn sm" data-act="line">Line</button></div>
+    <label class="f"><span>Ornament colour</span><input type="color" id="c-orncol" value="${ornColor}"></label>
+    <div class="orns">${Object.keys(ORN).map(k=>`<button data-orn="${k}" title="${ORN_NAMES[k]}">${ORN[k](ornColor)}</button>`).join('')}</div></div>
   <div class="sec"><h4>Card</h4>
     <div class="r2">${F.num('w','Width',t.w)}${F.num('h','Height',t.h)}</div>
     <div class="r2" style="margin-top:6px">${F.num('border.w','Border',t.border.w)}${F.num('border.r','Corner radius',t.border.r)}</div>
@@ -643,26 +804,21 @@ function renderTools(){const t=CE.tpl,L=t.layout,b=t.bg;
   <div class="sec"><h4>Layout</h4>
     ${F.sel('layout.preset','Preset',L.preset,[['none','None'],['frame','Inner frame'],['header','Header and body'],['twocol','Header and two columns'],['portrait','Portrait, stats, notes'],['grid','Grid']])}
     ${L.preset==='grid'?`<div class="r2">${F.num('layout.cols','Columns',L.cols)}${F.num('layout.rows','Rows',L.rows)}</div>`:''}
-    ${L.preset!=='none'?`<div class="r2" style="margin-top:6px">${F.num('layout.margin','Margin',L.margin)}${F.num('layout.gap','Gap',L.gap)}</div>${F.color('layout.color','Panel colour',L.color)}${F.range('layout.opacity','Panel opacity',L.opacity,0,1,.05)}<div class="r2">${F.num('layout.radius','Radius',L.radius)}${F.num('layout.strokeW','Outline',L.strokeW)}</div>${F.color('layout.stroke','Outline colour',L.stroke)}`:''}</div>
-  <div class="sec"><h4>Text</h4><div class="btns"><button class="btn sm pri" data-act="group">Add text group</button><button class="btn sm" data-act="box">Add text box</button></div>
-    <p class="tip">A text box is added to the selected group, or in a new group if none is selected.</p></div>
-  <div class="sec"><h4>Decorations</h4>
-    <div class="btns"><button class="btn sm" data-act="png">Add PNG image</button><button class="btn sm" data-act="rect">Rectangle</button><button class="btn sm" data-act="ellipse">Ellipse</button><button class="btn sm" data-act="line">Line</button></div>
-    <label class="f"><span>Ornament colour</span><input type="color" id="c-orncol" value="${ornColor}"></label>
-    <div class="orns">${Object.keys(ORN).map(k=>`<button data-orn="${k}" title="${ORN_NAMES[k]}">${ORN[k](ornColor)}</button>`).join('')}</div></div>`;
+    ${L.preset!=='none'?`<div class="r2" style="margin-top:6px">${F.num('layout.margin','Margin',L.margin)}${F.num('layout.gap','Gap',L.gap)}</div>${F.color('layout.color','Panel colour',L.color)}${F.range('layout.opacity','Panel opacity',L.opacity,0,1,.05)}<div class="r2">${F.num('layout.radius','Radius',L.radius)}${F.num('layout.strokeW','Outline',L.strokeW)}</div>${F.color('layout.stroke','Outline colour',L.stroke)}`:''}</div>`;
 }
 bindForm(cTools,()=>CE.tpl,(t,k)=>{if(k==='w'||k==='h')CE.tpl[k]=clamp(CE.tpl[k],50,8000);renderCard();save();if(['layout.preset','bg.grad'].includes(k))renderTools()},pushHist);
 cTools.addEventListener('input',e=>{if(e.target.id==='c-snap')CE.snap=e.target.checked;if(e.target.id==='c-orncol'){ornColor=e.target.value;$$('.orns button',cTools).forEach(b=>b.innerHTML=ORN[b.dataset.orn](ornColor))}});
-cTools.addEventListener('click',e=>{const a=e.target.closest('[data-act],[data-orn]');if(!a)return;const t=CE.tpl,c=viewCenterCard(),s=Math.min(t.w,t.h),fs=R(clamp(s*.028,14,40));
+cTools.addEventListener('click',e=>{const a=e.target.closest('[data-act],[data-orn]');if(!a)return;commitInline();const t=CE.tpl,c=viewCenterCard(),s=Math.min(t.w,t.h),fs=baseFs();
   if(a.dataset.orn){const k=a.dataset.orn,wide=['divider','banner'].includes(k),w=R(wide?s*.6:s*.2),hh=R(wide?(k==='divider'?s*.04:s*.14):s*.2);addItem({id:uid(),type:'orn',orn:k,color:ornColor,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1});return}
   switch(a.dataset.act){
+    case 'ttool':setCTool('text');toast('Text tool: click the card to type, or drag to draw a text box');break;
     case 'bgimg':pickFiles('image/*',false,fs2=>readImages(fs2,src=>{pushHist();const id='a'+uid();W.assets[id]=src;t.bg.img=id;save();renderTools();renderCard()}));break;
     case 'bgclear':pushHist();t.bg.img=null;save();renderTools();renderCard();break;
     case 'group':{const w=R(t.w*.45),hh=R(t.h*.22);addItem(newGroup('New group',c.x-w/2,c.y-hh/2,w,hh,['Field 1','Field 2','Field 3'],'v',fs));break}
-    case 'box':{const f=CE.sel&&findItem(CE.sel);const g=f?(f.parent||(f.item.type==='group'?f.item:null)):null;
-      if(g){pushHist();const b=newBox('Field '+(g.boxes.length+1),g.boxes[0]?g.boxes[0].size:fs);const last=g.boxes[g.boxes.length-1];Object.assign(b,last?{x:last.x,y:Math.min(g.h-30,last.y+last.h+8),w:last.w,h:last.h}:{x:12,y:40,w:g.w-24,h:R(fs*2.6)});g.boxes.push(b);CE.sel=b.id;save();renderCard();renderProps();renderText()}
-      else{const w=R(t.w*.4),hh=R(fs*4.2);addItem(newGroup('New group',c.x-w/2,c.y-hh/2,w,hh,['Field'],'v',fs))}break}
-    case 'png':pickFiles('image/png,image/*',true,fs2=>addImages(fs2));break;
+    case 'box':addField('text');break;
+    case 'num':addField('number');break;
+    case 'pm':{const bs=R(fs*2);const b=newBtn('+',1,null,c.x-bs/2,c.y-bs/2,bs);const nb=numBoxesOf(t);if(nb.length===1)b.target=nb[0].b.id;addItem(b);toast('Pick which number bar it changes in Properties');break}
+    case 'png':pickFiles('image/png,image/jpeg,image/webp,image/*',true,fs2=>addImages(fs2));break;
     case 'rect':case 'ellipse':{const w=R(s*.25),hh=R(s*.18);addItem({id:uid(),type:'shape',shape:a.dataset.act,fill:'#ffffff',fillOpacity:.4,stroke:'#5a3d1e',strokeW:2,radius:10,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1});break}
     case 'line':{const w=R(t.w*.6);addItem({id:uid(),type:'shape',shape:'rect',fill:'#5a3d1e',fillOpacity:1,stroke:'#5a3d1e',strokeW:0,radius:2,x:R(c.x-w/2),y:R(c.y),w,h:Math.max(2,R(s*.004)),rot:0,opacity:1});break}
   }});
@@ -671,57 +827,109 @@ cTools.addEventListener('click',e=>{const a=e.target.closest('[data-act],[data-o
 const actBtns=`<div class="btns"><button class="btn sm" data-act="front">Bring front</button><button class="btn sm" data-act="back">Send back</button><button class="btn sm" data-act="dup">Duplicate</button><button class="btn sm ghost" data-act="del">Delete</button></div>`;
 const geo=it=>`<div class="r4">${F.num('x','X',R(it.x))}${F.num('y','Y',R(it.y))}${F.num('w','W',R(it.w))}${F.num('h','H',R(it.h))}</div>`;
 const rotOp=it=>`${F.range('rot','Rotation',it.rot||0,-180,180,1)}${F.range('opacity','Opacity',it.opacity??1,0,1,.05)}`;
+const numN=(k,l,v)=>`<label class="m"><span>${l}</span><input type="number" data-k="${k}" data-null="1" value="${nn(v)?v:''}" placeholder="none" step="any"></label>`;
+const ALIGNS=[['left','Left'],['center','Centre'],['right','Right']];
+const LMODES=[['add','Add the change ×'],['set','Set to this ×'],['mod','Set to D&D modifier']];
+const numChoices=(t,except)=>numBoxesOf(t).filter(x=>x.b.id!==except).map(x=>[x.b.id,`${x.g.name} › ${x.b.label}`]);
+const sgn=v=>(+v<0?'− ':'+ ')+Math.abs(+v);
+function linkText(t,l,src){const to=l.to?boxName(t,l.to):'…',sn=src.label;
+  if(l.mode==='add')return `When ${sn} goes up by 1, ${to} changes by ${+l.k>0?'+':''}${l.k}.`;
+  if(l.mode==='set')return `${to} = ${sn} × ${l.k}${+l.c?' '+sgn(l.c):''}`;
+  return `${to} = (${sn} − 10) ÷ 2, rounded down${+l.c?' '+sgn(l.c):''}. For example 16 gives +3.`}
+function linksHTML(it){const t=CE.tpl,ls=t.links.filter(l=>l.from===it.id),inc=t.links.filter(l=>l.to===it.id),ch=numChoices(t,it.id);
+  return `<div class="sec"><h4>Connections</h4><p class="tip" style="margin:0 0 6px">When this number changes, other number bars change too.</p>
+  ${ls.map(l=>`<div class="lnk" data-lid="${l.id}"><select data-lk="to"><option value="">Choose a number bar…</option>${ch.map(([v,n])=>`<option value="${v}"${v===l.to?' selected':''}>${esc(n)}</option>`).join('')}</select>
+    <div class="lrow"><select data-lk="mode">${LMODES.map(([v,n])=>`<option value="${v}"${v===l.mode?' selected':''}>${n}</option>`).join('')}</select>${l.mode!=='mod'?`<input type="number" data-lk="k" value="${l.k}" step="any" title="Multiplier">`:''}${l.mode!=='add'?`<span class="pl">+</span><input type="number" data-lk="c" value="${l.c}" step="any" title="Plus">`:''}<button class="x" data-dellink title="Remove connection">×</button></div>
+    <p class="tip lx">${esc(linkText(t,l,it))}</p></div>`).join('')}
+  <button class="btn sm" data-act="addlink">+ Add connection</button>
+  ${inc.length?`<p class="tip">Changed by: ${inc.map(l=>esc(boxName(t,l.from))).join(', ')}</p>`:''}</div>`}
 function renderProps(){const f=CE.sel&&findItem(CE.sel);
-  if(!f){cProps.innerHTML=`<p class="muted" style="margin:8px 0">Select something on the card to edit its colour, place, name and size. Double-click a text box to jump to its text.</p>`;return}
+  if(!f){cProps.innerHTML=`<p class="muted" style="margin:8px 0">Select something on the card to edit its colour, place, name and size. Double-click any text to type on the card.</p>`;return}
   const it=f.item;let s='';
-  if(it.type==='box'){const p=f.parent;s=`<div class="sec"><h4>Text box in “${esc(p.name)}”</h4>${F.text('label','Name',it.label)}${F.chk('showLabel','Show name',it.showLabel)}<p class="tip" style="margin:0 0 6px">Position is relative to its group.</p>${geo(it)}</div>
-    <div class="sec"><h4>Text style</h4>${F.sel('font','Font',it.font,fontOpts)}${F.numf('size','Size',it.size)}${F.sel('align','Align',it.align,[['left','Left'],['center','Centre'],['right','Right']])}<div class="r2">${F.chk('bold','Bold',it.bold)}${F.chk('italic','Italic',it.italic)}</div>${F.color('color','Text colour',it.color)}${F.color('labelColor','Name colour',it.labelColor)}</div>
-    <div class="sec"><h4>Box</h4>${F.color('bg','Fill',it.bg)}${F.range('bgOpacity','Fill opacity',it.bgOpacity,0,1,.05)}${F.color('borderColor','Border',it.borderColor)}<div class="r2">${F.num('borderW','Border width',it.borderW)}${F.num('radius','Radius',it.radius)}</div></div>
-    <div class="btns"><button class="btn sm" data-act="selgroup">Select group</button><button class="btn sm" data-act="dup">Duplicate</button><button class="btn sm ghost" data-act="del">Delete</button></div>`}
-  else if(it.type==='group'){const b0=it.boxes[0]||newBox('',20);s=`<div class="sec"><h4>Text group</h4>${F.text('name','Name',it.name)}${geo(it)}${rotOp(it)}</div>
+  const boxLook=`<div class="sec"><h4>Look</h4>${F.sel('font','Font',it.font,fontOpts)}${F.numf('size','Size',it.size)}${F.sel('align','Align',it.align,ALIGNS)}<div class="r2">${F.chk('bold','Bold',it.bold)}${F.chk('italic','Italic',it.italic)}</div>${F.color('color','Text colour',it.color)}${F.color('labelColor','Name colour',it.labelColor)}${F.color('bg','Fill',it.bg)}${F.range('bgOpacity','Fill opacity',it.bgOpacity,0,1,.05)}${F.color('borderColor','Border',it.borderColor)}<div class="r2">${F.num('borderW','Border width',it.borderW)}${F.num('radius','Radius',it.radius)}</div></div>`;
+  const boxBtns=`<div class="btns"><button class="btn sm" data-act="selgroup">Select group</button><button class="btn sm" data-act="dup">Duplicate</button><button class="btn sm ghost" data-act="del">Delete</button></div>`;
+  if(it.type==='box'&&it.kind==='number'){const p=f.parent;s=`<div class="sec"><h4>Number bar in “${esc(p.name)}”</h4>${F.text('label','Name',it.label)}${F.chk('showLabel','Show name',it.showLabel)}
+    <label class="f"><span>Value</span><input type="number" data-numval="${it.id}" value="${it.value}" step="any"></label>
+    <div class="r4">${numN('min','Min',it.min)}${numN('max','Max',it.max)}${F.num('step','Step',it.step,'any')}</div>
+    ${F.chk('showSign','Show + sign',it.showSign)}${F.sel('style','Display',it.style,[['number','Number'],['bar','Fill bar (needs Max)']])}${it.style==='bar'?F.color('barColor','Bar colour',it.barColor):''}
+    <div class="btns"><button class="btn sm pri" data-act="pmbtns">Add + and − buttons</button></div><p class="tip" style="margin:0 0 6px">Position is relative to its group.</p>${geo(it)}</div>${linksHTML(it)}${boxLook}${boxBtns}`}
+  else if(it.type==='box'){const p=f.parent;s=`<div class="sec"><h4>Text box in “${esc(p.name)}”</h4>${F.text('label','Name',it.label)}${F.chk('showLabel','Show name',it.showLabel)}<p class="tip" style="margin:0 0 6px">Double-click it on the card to type there. Position is relative to its group.</p>${geo(it)}</div>${boxLook}${boxBtns}`}
+  else if(it.type==='text')s=`<div class="sec"><h4>Text</h4><textarea data-k="text" rows="3">${esc(it.text)}</textarea><p class="tip" style="margin:4px 0 0">Or double-click it on the card to type there.</p>${F.chk('auto','Grow with text',it.auto)}${geo(it)}${rotOp(it)}</div>
+    <div class="sec"><h4>Character</h4>${F.sel('font','Font',it.font,fontOpts)}${F.numf('size','Size',it.size)}${F.color('color','Colour',it.color)}<div class="r2">${F.chk('bold','Bold',it.bold)}${F.chk('italic','Italic',it.italic)}</div>${F.sel('align','Align',it.align,ALIGNS)}${F.range('lh','Line height',it.lh||1.2,.8,2.5,.05)}${F.range('ls','Letter spacing',it.ls||0,-.1,.5,.01)}</div>
+    <div class="sec"><h4>Effects</h4>${F.numf('strokeW','Outline (px)',it.strokeW||0)}${F.color('strokeColor','Outline colour',it.strokeColor||'#000000')}${F.chk('shadow','Drop shadow',it.shadow)}</div>${actBtns}`;
+  else if(it.type==='btn')s=`<div class="sec"><h4>Button</h4>${F.text('label','Label',it.label)}${F.sel('target','Changes',it.target||'',[['','Choose a number bar…'],...numChoices(CE.tpl)])}<label class="f"><span>Amount</span><input type="number" data-k="amount" value="${it.amount}" step="any"></label><p class="tip" style="margin:0 0 6px">Use a negative amount to subtract. Players click it to change the number.</p>${geo(it)}</div>
+    <div class="sec"><h4>Look</h4>${F.color('bg','Fill',it.bg)}${F.color('color','Text colour',it.color)}${F.color('borderColor','Border',it.borderColor)}<div class="r2">${F.num('borderW','Border width',it.borderW)}${F.num('radius','Radius',it.radius)}</div>${F.numf('size','Text size',it.size)}${rotOp(it)}</div>${actBtns}`;
+  else if(it.type==='group'){const b0=it.boxes[0]||newBox('',20);s=`<div class="sec"><h4>Group</h4>${F.text('name','Name',it.name)}${geo(it)}${rotOp(it)}</div>
     <div class="sec"><h4>Title</h4>${F.chk('showTitle','Show title',it.showTitle)}${F.sel('titleFont','Font',it.titleFont,fontOpts)}${F.numf('titleSize','Size',it.titleSize)}${F.color('titleColor','Colour',it.titleColor)}</div>
     <div class="sec"><h4>Group box</h4>${F.color('bg','Fill',it.bg)}${F.range('bgOpacity','Fill opacity',it.bgOpacity,0,1,.05)}${F.color('borderColor','Border',it.borderColor)}<div class="r2">${F.num('borderW','Border width',it.borderW)}${F.num('radius','Radius',it.radius)}</div></div>
-    <div class="sec"><h4>All ${it.boxes.length} text boxes</h4><div class="btns"><button class="btn sm" data-act="arr-v">Stack</button><button class="btn sm" data-act="arr-h">Row</button><button class="btn sm" data-act="arr-g">Grid</button><button class="btn sm" data-act="addbox">Add box</button></div>
+    <div class="sec"><h4>All ${it.boxes.length} boxes</h4><div class="btns"><button class="btn sm" data-act="arr-v">Stack</button><button class="btn sm" data-act="arr-h">Row</button><button class="btn sm" data-act="arr-g">Grid</button><button class="btn sm" data-act="addbox">Add text box</button><button class="btn sm" data-act="addnum">Add number bar</button></div>
     ${F.sel('font','Font',b0.font,fontOpts,1)}${F.numf('size','Text size',b0.size,1)}${F.color('color','Text colour',b0.color,1)}${F.color('labelColor','Name colour',b0.labelColor,1)}${F.color('bg','Box fill',b0.bg,1)}${F.color('borderColor','Box border',b0.borderColor,1)}</div>${actBtns}`}
-  else if(it.type==='image')s=`<div class="sec"><h4>Image</h4>${F.text('name','Name',it.name||'Image')}${geo(it)}${rotOp(it)}<div class="r2">${F.chk('flipX','Flip H',it.flipX)}${F.chk('flipY','Flip V',it.flipY)}</div><div class="btns"><button class="btn sm" data-act="ratio">Original ratio</button><button class="btn sm" data-act="fill">Fill card</button></div><p class="tip">Corner handle keeps the ratio; hold Shift to stretch.</p></div>${actBtns}`;
+  else if(it.type==='image')s=`<div class="sec"><h4>Put text on this image</h4><div class="btns"><button class="btn sm pri" data-act="img-group">Text group here</button><button class="btn sm" data-act="img-text">Text here</button><button class="btn sm" data-act="img-num">Number bar here</button></div><p class="tip" style="margin:0">These are locked to the image, so they move with it.</p></div>
+    <div class="sec"><h4>Image</h4>${F.text('name','Name',it.name||'Image')}${geo(it)}${rotOp(it)}<div class="r2">${F.chk('flipX','Flip H',it.flipX)}${F.chk('flipY','Flip V',it.flipY)}</div><div class="btns"><button class="btn sm" data-act="ratio">Original ratio</button><button class="btn sm" data-act="fill">Fill card</button></div><p class="tip">Corner handle keeps the ratio; hold Shift to stretch.</p></div>${actBtns}`;
   else if(it.type==='orn')s=`<div class="sec"><h4>${ORN_NAMES[it.orn]||'Ornament'}</h4>${F.color('color','Colour',it.color)}${geo(it)}${rotOp(it)}</div>${actBtns}`;
   else if(it.type==='shape')s=`<div class="sec"><h4>${it.shape==='ellipse'?'Ellipse':'Rectangle'}</h4>${F.color('fill','Fill',it.fill)}${F.range('fillOpacity','Fill opacity',it.fillOpacity??1,0,1,.05)}${F.color('stroke','Outline',it.stroke)}<div class="r2">${F.num('strokeW','Outline width',it.strokeW)}${it.shape!=='ellipse'?F.num('radius','Radius',it.radius):''}</div>${geo(it)}${rotOp(it)}</div>${actBtns}`;
   cProps.innerHTML=s}
-bindForm(cProps,()=>{const f=CE.sel&&findItem(CE.sel);return f&&f.item},(t,k)=>{renderCard();save();if(['label','name'].includes(k))renderText();if(['showTitle'].includes(k))renderProps()},pushHist);
-cProps.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;const f=findItem(CE.sel);if(!f)return;const it=f.item,arr=f.parent?f.parent.boxes:CE.tpl.items,i=arr.indexOf(it);pushHist();
+bindForm(cProps,()=>{const f=CE.sel&&findItem(CE.sel);return f&&f.item},(t,k)=>{const f=findItem(CE.sel),it=f&&f.item;if(!it)return;
+  if(it.anchor&&(k==='x'||k==='y'))reanchor(it);
+  if(it.kind==='number'&&['min','max'].includes(k))changeNum(CE.tpl,tplAcc(CE.tpl),it.id,it.value);
+  if(k==='step')it.step=Math.abs(it.step)||1;
+  renderCard();save();renderOpts();
+  if(['label','name','text'].includes(k))renderText();if(['showTitle','style','auto'].includes(k))renderProps()},pushHist);
+function onNumInput(inp,root){const v=parseFloat(inp.value);if(isNaN(v))return;changeNum(CE.tpl,tplAcc(CE.tpl),inp.dataset.numval,v);renderCard();save();
+  $$('[data-numval]').forEach(x=>{if(x!==inp){const b=findBoxIn(CE.tpl,x.dataset.numval);if(b)x.value=b.value}})}
+cProps.addEventListener('focusin',e=>{if(e.target.matches('[data-lk],[data-numval]'))pushHist()});
+cProps.addEventListener('input',e=>{const t=e.target;if(t.dataset.numval){onNumInput(t);return}
+  if(t.dataset.lk){const row=t.closest('[data-lid]'),l=CE.tpl.links.find(x=>x.id===row.dataset.lid);if(!l)return;const k=t.dataset.lk;let v=t.value;if(k==='k'||k==='c'){v=parseFloat(v);if(isNaN(v))return}
+    l[k]=v;recalcLinks(CE.tpl,tplAcc(CE.tpl));renderCard();save();
+    if(k==='mode'||k==='to'){renderProps();renderText()}else{const f=findItem(CE.sel);row.querySelector('.lx').textContent=linkText(CE.tpl,l,f.item)}}});
+cProps.addEventListener('click',e=>{
+  if(e.target.closest('[data-dellink]')){const row=e.target.closest('[data-lid]');pushHist();CE.tpl.links=CE.tpl.links.filter(l=>l.id!==row.dataset.lid);save();renderProps();return}
+  const a=e.target.closest('[data-act]');if(!a)return;const f=findItem(CE.sel);if(!f)return;const it=f.item,arr=f.parent?f.parent.boxes:CE.tpl.items,i=arr.indexOf(it),fs=baseFs();pushHist();
   switch(a.dataset.act){
     case 'front':arr.splice(i,1);arr.push(it);break;
     case 'back':arr.splice(i,1);arr.unshift(it);break;
-    case 'dup':{const c=cloneItem(it);c.x+=20;c.y+=20;arr.splice(i+1,0,c);CE.sel=c.id;break}
+    case 'dup':{const c=cloneItem(it);c.x+=20;c.y+=20;if(c.anchor)reanchor(c);arr.splice(i+1,0,c);CE.sel=c.id;break}
     case 'del':arr.splice(i,1);CE.sel=null;break;
     case 'selgroup':CE.sel=f.parent.id;break;
     case 'arr-v':arrange(it,'v');break;case 'arr-h':arrange(it,'h');break;case 'arr-g':arrange(it,'g');break;
-    case 'addbox':{const b=newBox('Field '+(it.boxes.length+1),it.boxes[0]?it.boxes[0].size:20);if(it.boxes[0])['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius'].forEach(k=>b[k]=it.boxes[0][k]);it.boxes.push(b);arrange(it,it.boxes.length>4?'g':'v');break}
+    case 'addbox':case 'addnum':{const b=a.dataset.act==='addnum'?newNumBox('Number',it.boxes[0]?it.boxes[0].size:fs):newBox('Field '+(it.boxes.length+1),it.boxes[0]?it.boxes[0].size:fs);if(it.boxes[0])['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius'].forEach(k=>b[k]=it.boxes[0][k]);it.boxes.push(b);arrange(it,it.boxes.length>4?'g':'v');break}
     case 'ratio':{const im=new Image();im.onload=()=>{it.h=R(it.w*im.naturalHeight/im.naturalWidth);renderCard();renderProps();save()};im.src=W.assets[it.asset];break}
     case 'fill':Object.assign(it,{x:0,y:0,w:CE.tpl.w,h:CE.tpl.h,rot:0});break;
-  }save();renderCard();renderProps();renderText()});
+    case 'addlink':{const ch=numChoices(CE.tpl,it.id);if(!ch.length){toast('Add another number bar first, then connect them');break}CE.tpl.links.push({id:uid(),from:it.id,to:ch[0][0],mode:'add',k:1,c:0});break}
+    case 'pmbtns':{const g=f.parent,bs=R(clamp(it.h*.5,22,90)),gp=R(bs*.2);let x=g.x+it.x+it.w+gp;const y=g.y+it.y+(it.h-bs)/2;if(x+2*bs+gp>CE.tpl.w)x=g.x+it.x+it.w-2*bs-gp*2;
+      const st=+it.step||1,mi=newBtn('−',-st,it.id,x,y,bs),pl=newBtn('+',st,it.id,x+bs+gp,y,bs);attachTo(mi,g);attachTo(pl,g);CE.tpl.items.push(mi,pl);CE.sel=pl.id;toast('Buttons added and locked to the group');break}
+    case 'img-group':{const g=frameless(newGroup('Text group',it.x+it.w*.15,it.y+it.h*.3,it.w*.7,it.h*.4,['Field 1','Field 2'],'v',fs));arrange(g,'v');g.boxes.forEach(b=>{b.bgOpacity=.25;b.borderW=0});attachTo(g,it);CE.tpl.items.push(g);CE.sel=g.id;break}
+    case 'img-text':{const tx=newText('Text',it.x+it.w*.1,it.y+it.h*.45);tx.text='Text';attachTo(tx,it);CE.tpl.items.push(tx);CE.sel=tx.id;break}
+    case 'img-num':{const w=R(fs*5),hh=R(fs*3.6),g=frameless(newGroup('Number',it.x+it.w/2-w/2,it.y+it.h/2-hh/2,w,hh,[],'v',fs)),b=newNumBox('Number',fs);Object.assign(b,{x:0,y:0,w,h:hh,bgOpacity:.25,borderW:0});g.boxes.push(b);attachTo(g,it);CE.tpl.items.push(g);CE.sel=b.id;break}
+  }recalcLinks(CE.tpl,tplAcc(CE.tpl));save();renderCard();renderProps();renderText();renderOpts()});
 
-/* --- text window (right side) --- */
+/* --- text and numbers window (right side) --- */
 let textFilter='';
-function renderText(){const groups=CE.tpl.items.filter(i=>i.type==='group');const q=textFilter.toLowerCase();
-  cText.innerHTML=`<div style="position:sticky;top:0;background:var(--panel);padding:8px 0 2px;z-index:1"><input type="text" id="tp-q" placeholder="Find a text box…" value="${esc(textFilter)}"></div>`+
-  (groups.length?groups.map(g=>{const bx=g.boxes.filter(b=>!q||(b.label+' '+b.text+' '+g.name).toLowerCase().includes(q));if(q&&!bx.length)return'';
+const rowsOf=s=>Math.min(6,Math.max(1,(String(s).match(/\n/g)||[]).length+1));
+function renderText(){const t=CE.tpl,groups=t.items.filter(i=>i.type==='group'),texts=t.items.filter(i=>i.type==='text'),q=textFilter.toLowerCase();
+  const boxRow=b=>b.kind==='number'
+    ?`<div class="tpb" data-bid="${b.id}"><div class="tpbh"><input type="text" data-blabel="${b.id}" value="${esc(b.label)}" aria-label="Number bar name"><span class="badge">number</span><button class="x" data-delb="${b.id}" title="Delete">×</button></div><input type="number" data-numval="${b.id}" value="${b.value}" step="any"></div>`
+    :`<div class="tpb" data-bid="${b.id}"><div class="tpbh"><input type="text" data-blabel="${b.id}" value="${esc(b.label)}" aria-label="Box name"><button class="x" data-delb="${b.id}" title="Delete">×</button></div><textarea data-id="${b.id}" rows="${rowsOf(b.text)}" placeholder="Text players will see…">${esc(b.text)}</textarea></div>`;
+  cText.innerHTML=`<div style="position:sticky;top:0;background:var(--panel);padding:8px 0 2px;z-index:1"><input type="text" id="tp-q" placeholder="Find a box…" value="${esc(textFilter)}"></div>`+
+  (groups.length?groups.map(g=>{const bx=g.boxes.filter(b=>!q||(b.label+' '+(b.text||'')+' '+g.name).toLowerCase().includes(q));if(q&&!bx.length)return'';
     return `<div class="tpg" data-gid="${g.id}"><div class="tpgh" data-pick="${g.id}"><span class="sw" style="background:${g.borderColor}"></span><input type="text" data-gname="${g.id}" value="${esc(g.name)}" aria-label="Group name"><button class="x" data-delg="${g.id}" title="Delete group">×</button></div>
-    ${bx.map(b=>`<div class="tpb" data-bid="${b.id}"><div class="tpbh"><input type="text" data-blabel="${b.id}" value="${esc(b.label)}" aria-label="Box name"><button class="x" data-delb="${b.id}" title="Delete text box">×</button></div><textarea data-id="${b.id}" rows="${Math.min(6,Math.max(1,(b.text.match(/\n/g)||[]).length+1))}" placeholder="Text players will see…">${esc(b.text)}</textarea></div>`).join('')}
-    <button class="tpadd" data-addb="${g.id}">+ Add text box</button></div>`}).join(''):`<p class="muted">No text groups yet. Use “Add text group” in Card tools.</p>`);
+    ${bx.map(boxRow).join('')}<div class="tpadds"><button class="tpadd" data-addb="${g.id}">+ Text box</button><button class="tpadd" data-addn="${g.id}">+ Number bar</button></div></div>`}).join(''):`<p class="muted">No groups yet. Use “Text group” or “Number bar” in Card tools.</p>`)+
+  (texts.length?`<div class="tpg"><div class="tpgh"><b style="flex:1;padding:4px 0">Free text</b></div>${texts.filter(x=>!q||x.text.toLowerCase().includes(q)).map(x=>`<div class="tpb" data-bid="${x.id}"><div class="tpbh"><span class="muted" style="flex:1;font-size:12.5px">Text${x.locked?' · locked':''}</span><button class="x" data-delt="${x.id}" title="Delete">×</button></div><textarea data-id="${x.id}" rows="${rowsOf(x.text)}">${esc(x.text)}</textarea></div>`).join('')}</div>`:'');
   markText()}
-function markText(){const f=CE.sel&&findItem(CE.sel);$$('.tpg',cText).forEach(g=>g.classList.toggle('on',!!f&&(f.item.id===g.dataset.gid||(f.parent&&f.parent.id===g.dataset.gid))));$$('.tpb',cText).forEach(b=>b.classList.toggle('on',!!f&&f.item.id===b.dataset.bid))}
-cText.addEventListener('focusin',e=>{if(e.target.matches('textarea,[data-gname],[data-blabel]')){pushHist();const id=e.target.dataset.id||e.target.dataset.blabel||e.target.dataset.gname;if(id&&CE.sel!==id){CE.sel=id;renderCard();renderProps();markText()}}});
+function markText(){const f=CE.sel&&findItem(CE.sel);$$('.tpg',cText).forEach(g=>g.classList.toggle('on',!!f&&!!g.dataset.gid&&(f.item.id===g.dataset.gid||(f.parent&&f.parent.id===g.dataset.gid))));$$('.tpb',cText).forEach(b=>b.classList.toggle('on',!!f&&f.item.id===b.dataset.bid))}
+cText.addEventListener('focusin',e=>{if(e.target.matches('textarea,[data-gname],[data-blabel],[data-numval]')){pushHist();const id=e.target.dataset.id||e.target.dataset.blabel||e.target.dataset.gname||e.target.dataset.numval;if(id&&CE.sel!==id){CE.sel=id;renderCard();renderProps();renderOpts();markText()}}});
 cText.addEventListener('input',e=>{const t=e.target;
   if(t.id==='tp-q'){textFilter=t.value;renderText();const q=$('#tp-q',cText);q.focus();q.setSelectionRange(q.value.length,q.value.length);return}
+  if(t.dataset.numval){onNumInput(t);return}
   const f=findItem(t.dataset.id||t.dataset.blabel||t.dataset.gname);if(!f)return;
   if(t.dataset.id)f.item.text=t.value;else if(t.dataset.blabel)f.item.label=t.value;else f.item.name=t.value;
-  renderCard();save();if(t.dataset.id){t.rows=Math.min(6,Math.max(1,(t.value.match(/\n/g)||[]).length+1))}
-  const pi=$('[data-k="label"],[data-k="name"]',cProps);if(pi&&!t.dataset.id)pi.value=t.value});
+  renderCard();save();if(t.dataset.id)t.rows=rowsOf(t.value);
+  const pi=$('[data-k="label"],[data-k="name"],[data-k="text"]',cProps);if(pi)pi.value=t.value});
 cText.addEventListener('click',e=>{const t=e.target;
-  if(t.dataset.delg){pushHist();CE.tpl.items=CE.tpl.items.filter(i=>i.id!==t.dataset.delg);CE.sel=null;save();renderCard();renderProps();renderText();return}
-  if(t.dataset.delb){const f=findItem(t.dataset.delb);pushHist();f.parent.boxes=f.parent.boxes.filter(b=>b!==f.item);if(CE.sel===f.item.id)CE.sel=null;save();renderCard();renderProps();renderText();return}
-  if(t.dataset.addb){const g=findItem(t.dataset.addb).item;CE.sel=g.id;$('[data-act="box"]',cTools).click();setTimeout(()=>{const ta=$(`textarea[data-id="${CE.sel}"]`,cText);ta&&ta.focus()},0);return}
+  if(t.dataset.delg){pushHist();CE.tpl.items=CE.tpl.items.filter(i=>i.id!==t.dataset.delg);CE.sel=null;save();renderCard();renderProps();renderText();renderOpts();return}
+  if(t.dataset.delt){pushHist();CE.tpl.items=CE.tpl.items.filter(i=>i.id!==t.dataset.delt);if(CE.sel===t.dataset.delt)CE.sel=null;save();renderCard();renderProps();renderText();renderOpts();return}
+  if(t.dataset.delb){const f=findItem(t.dataset.delb);pushHist();f.parent.boxes=f.parent.boxes.filter(b=>b!==f.item);if(CE.sel===f.item.id)CE.sel=null;save();renderCard();renderProps();renderText();renderOpts();return}
+  if(t.dataset.addb||t.dataset.addn){CE.sel=t.dataset.addb||t.dataset.addn;addField(t.dataset.addn?'number':'text');renderText();setTimeout(()=>{const x=$(`[data-id="${CE.sel}"],[data-numval="${CE.sel}"]`,cText);x&&x.focus()},0);return}
   const pk=t.closest('[data-pick]');if(pk&&t.tagName!=='INPUT')selectC(pk.dataset.pick)});
 
 /* ================= MAP EDITOR ================= */
@@ -963,7 +1171,7 @@ screens.pworld={enter(){$('#pw-name').textContent=PW.name;$('#pw-desc').textCont
 $('#pw-back').onclick=()=>show(PREVIEW?'world':'home');
 const myChars=()=>PDB.chars.filter(c=>c.worldId===PW.id);
 const baseTpl=c=>PW.templates.find(x=>x.id===c.tplId)||c.snap;
-function charTpl(c){const o=JSON.parse(JSON.stringify(baseTpl(c)));o.items.forEach(i=>i.boxes&&i.boxes.forEach(b=>{if(c.values[b.id]!=null)b.text=c.values[b.id]}));return o}
+function charTpl(c){const o=JSON.parse(JSON.stringify(baseTpl(c)));o.items.forEach(i=>i.boxes&&i.boxes.forEach(b=>{const v=c.values[b.id];if(v==null)return;if(b.kind==='number')b.value=+v;else b.text=v}));return o}
 function renderPWorld(){const ch=myChars();
   $('#pw-chars').innerHTML=ch.length?ch.map(c=>`<article class="tile" data-id="${c.id}"><div class="thumb" data-act="open">${cardThumb(charTpl(c),184,PW)}</div><div class="tbody"><h3>${esc(c.name)}</h3><p>${esc(baseTpl(c).name)}</p></div><div class="tacts"><button class="btn pri sm" data-act="open">Open</button><button class="btn sm ghost" data-act="del">Delete</button></div></article>`).join('')
     :`<div class="empty">${PW.templates.length?'You have no characters in this world yet. Make one from a card.':"The Writer hasn't added any cards to this world yet."}</div>`;
@@ -992,16 +1200,27 @@ function renderPC(){pcWorld.innerHTML=cardHTML(PW,charTpl(PC.c));if(PC.sel){cons
 const applyPC=()=>{pcWorld.style.transform=`translate(${PC.pan.x}px,${PC.pan.y}px) scale(${PC.zoom})`;pcStage.style.setProperty('--iz',1/PC.zoom);$('#pc-zl').textContent=R(PC.zoom*100)+'%'};
 function fitPC(){const t=baseTpl(PC.c);fitView(PC,pcStage,t.w,t.h,applyPC,innerWidth>900&&!pcWin.classList.contains('min')?360:0)}
 const rowsFor=t=>Math.min(8,Math.max(1,(String(t).match(/\n/g)||[]).length+1));
+const pAcc={get:id=>{const v=PC.c.values[id];if(v!=null&&v!==''&&!isNaN(+v))return +v;const b=findBoxIn(baseTpl(PC.c),id);return b?(+b.value||0):0},set:(id,v)=>{PC.c.values[id]=v}};
 function renderPCText(){const t=charTpl(PC.c),gs=t.items.filter(i=>i.type==='group'&&i.boxes.length);
-  pcText.innerHTML=gs.length?gs.map(g=>`<div class="sec"><h4>${esc(g.name)}</h4>${g.boxes.map(b=>`<div class="ptb" data-bid="${b.id}"><label for="pt-${b.id}">${esc(b.label)}</label><textarea id="pt-${b.id}" data-id="${b.id}" rows="${rowsFor(b.text)}">${esc(b.text)}</textarea></div>`).join('')}</div>`).join(''):'<p class="muted">This card has nothing to fill in.</p>'}
-pcText.addEventListener('focusin',e=>{const id=e.target.dataset.id;if(!id)return;PC.sel=id;$$('.ptb',pcText).forEach(p=>p.classList.toggle('on',p.dataset.bid===id));renderPC()});
-pcText.addEventListener('input',e=>{const id=e.target.dataset.id;if(!id)return;PC.c.values[id]=e.target.value;e.target.rows=rowsFor(e.target.value);renderPC();psave()});
-pcStage.addEventListener('pointerdown',e=>{if(e.target.closest('.hint'))return;const b=e.target.closest('.it-box');
-  if(b&&e.button===0){const ta=$(`textarea[data-id="${b.dataset.id}"]`,pcText);if(ta){pcWin.classList.remove('min');ta.scrollIntoView({block:'center'});setTimeout(()=>ta.focus(),0);return}}
+  pcText.innerHTML=gs.length?gs.map(g=>`<div class="sec"><h4>${esc(g.name)}</h4>${g.boxes.map(b=>b.kind==='number'
+    ?`<div class="ptb" data-bid="${b.id}"><label for="pt-${b.id}">${esc(b.label)}</label><div class="pnum"><button class="btn sm" data-pstep="-1" data-for="${b.id}" aria-label="Decrease ${esc(b.label)}">−</button><input type="number" id="pt-${b.id}" data-pnum="${b.id}" value="${b.value}" step="any"><button class="btn sm" data-pstep="1" data-for="${b.id}" aria-label="Increase ${esc(b.label)}">+</button></div></div>`
+    :`<div class="ptb" data-bid="${b.id}"><label for="pt-${b.id}">${esc(b.label)}</label><textarea id="pt-${b.id}" data-id="${b.id}" rows="${rowsFor(b.text)}">${esc(b.text)}</textarea></div>`).join('')}</div>`).join(''):'<p class="muted">This card has nothing to fill in.</p>'}
+function refreshPNums(except){$$('[data-pnum]',pcText).forEach(x=>{if(x!==except)x.value=pAcc.get(x.dataset.pnum)})}
+function pMark(id){PC.sel=id;$$('.ptb',pcText).forEach(p=>p.classList.toggle('on',p.dataset.bid===id));renderPC()}
+pcText.addEventListener('focusin',e=>{const id=e.target.dataset.id||e.target.dataset.pnum;if(id)pMark(id)});
+pcText.addEventListener('input',e=>{const t=e.target;
+  if(t.dataset.pnum){const v=parseFloat(t.value);if(isNaN(v))return;changeNum(baseTpl(PC.c),pAcc,t.dataset.pnum,v);renderPC();refreshPNums(t);psave();return}
+  const id=t.dataset.id;if(!id)return;PC.c.values[id]=t.value;t.rows=rowsFor(t.value);renderPC();psave()});
+pcText.addEventListener('click',e=>{const b=e.target.closest('[data-pstep]');if(!b)return;const id=b.dataset.for,bx=findBoxIn(baseTpl(PC.c),id);if(!bx)return;
+  changeNum(baseTpl(PC.c),pAcc,id,pAcc.get(id)+(+b.dataset.pstep)*(Math.abs(+bx.step)||1));PC.sel=id;renderPC();refreshPNums();psave()});
+pcStage.addEventListener('pointerdown',e=>{if(e.target.closest('.hint'))return;
+  const bt=e.target.closest('.it-btn');if(bt&&e.button===0){e.preventDefault();const t=baseTpl(PC.c),it=t.items.find(i=>i.id===bt.dataset.id);if(it&&pressBtn(t,pAcc,it)){PC.sel=it.target;renderPC();refreshPNums();psave()}return}
+  const b=e.target.closest('.it-box');
+  if(b&&e.button===0){const fld=$(`[data-id="${b.dataset.id}"],[data-pnum="${b.dataset.id}"]`,pcText);if(fld){pcWin.classList.remove('min');fld.scrollIntoView({block:'center'});setTimeout(()=>{fld.focus();fld.select&&fld.dataset.pnum&&fld.select()},0);return}}
   startPan(e,PC,pcStage,applyPC)});
 pcStage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(PC,pcStage,applyPC,e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))},{passive:false});
 $('#pc-zin').onclick=()=>zoomCenter(PC,pcStage,applyPC,1.25);$('#pc-zout').onclick=()=>zoomCenter(PC,pcStage,applyPC,.8);$('#pc-fit').onclick=fitPC;
-$('#pc-copy').onclick=()=>{const t=charTpl(PC.c);const txt=[PC.c.name,...t.items.filter(i=>i.type==='group').flatMap(g=>['',g.name.toUpperCase(),...g.boxes.map(b=>`${b.label}: ${b.text}`)])].join('\n');
+$('#pc-copy').onclick=()=>{const t=charTpl(PC.c);const txt=[PC.c.name,...t.items.filter(i=>i.type==='group').flatMap(g=>['',g.name.toUpperCase(),...g.boxes.map(b=>`${b.label}: ${b.kind==='number'?fmtNum(b,b.value):b.text}`)])].join('\n');
   navigator.clipboard.writeText(txt).then(()=>toast('Character copied as text'),()=>toast('Copy was blocked by the browser'))};
 /* map viewer */
 const PM={map:null,zoom:1,pan:{x:0,y:0}};const pmStage=$('#pm-stage'),pmWorld=$('#pm-world');
@@ -1024,11 +1243,12 @@ document.addEventListener('keydown',e=>{
   if(typing(e))return;const mod=e.ctrlKey||e.metaKey,k=e.key.toLowerCase();
   if(cur==='card'){
     if(mod&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}if(mod&&k==='y'){e.preventDefault();redo();return}
+    if(!mod&&!e.altKey&&!CE.preview){if(k==='v'){setCTool('move');return}if(k==='t'){setCTool('text');return}if(k==='h'){setCTool('hand');return}}
     const f=CE.sel&&findItem(CE.sel);if(!f)return;
     if(mod&&k==='d'){e.preventDefault();$('[data-act="dup"]',cProps)?.click();return}
     if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();$('[data-act="del"]',cProps)?.click();return}
     const d=e.shiftKey?10:1,mv={ArrowLeft:[-d,0],ArrowRight:[d,0],ArrowUp:[0,-d],ArrowDown:[0,d]}[e.key];
-    if(mv){e.preventDefault();pushHist();f.item.x+=mv[0];f.item.y+=mv[1];renderCard();renderProps();save()}
+    if(mv){e.preventDefault();if(f.item.locked){toast('Unlock it first to move it');return}pushHist();f.item.x+=mv[0];f.item.y+=mv[1];renderCard();renderProps();save()}
     if(e.key==='Escape')selectC(null)}
   if(cur==='map'){
     if(mod&&k==='z'){e.preventDefault();e.shiftKey?mRedo():mUndo();return}if(mod&&k==='y'){e.preventDefault();mRedo();return}
