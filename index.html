@@ -121,6 +121,11 @@ input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
 .lx{margin:4px 0 0!important}
 .pnum{display:flex;gap:4px}.pnum input{text-align:center}.pnum .btn{width:36px;justify-content:center;padding:0;flex:none}
 .tpadds{display:flex}.tpadds .tpadd{flex:1}.tpadds .tpadd+.tpadd{border-left:1px solid var(--line)}
+.tphead{position:sticky;top:0;background:var(--panel);padding:8px 0 4px;z-index:1}
+.tabs{display:flex;gap:4px;margin-bottom:6px}.tabs .tg{flex:1;font-size:12.5px;font-weight:500}
+.rule{border:1px solid var(--line);border-radius:8px;padding:8px;margin:8px 0;background:var(--panel2)}
+.rh{display:flex;gap:6px;align-items:center;margin:2px 0}.rh b{width:36px;flex:none;font-size:12.5px;color:var(--acc)}.rh select{flex:1}
+.rl{display:flex;gap:6px;align-items:center;margin:4px 0 8px 42px}.rl select{flex:1}.rl input{width:70px;flex:none}.rw{font-size:12.5px;color:var(--mute);white-space:nowrap}
 /* editor bars */
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);z-index:20;position:relative}
 .bar .title-in{width:220px;font-weight:600;background:transparent;border-color:transparent}
@@ -507,7 +512,7 @@ function tplAcc(t){return{get:id=>{const b=findBoxIn(t,id);return b?(+b.value||0
 function changeNum(t,acc,id,nv){const seen=new Set();
   const go=(id,nv)=>{if(seen.has(id))return;seen.add(id);const b=findBoxIn(t,id);if(!b||b.kind!=='number')return;nv=clampNum(b,nv);const old=acc.get(id);acc.set(id,nv);const d=nv-old;
     (t.links||[]).forEach(l=>{if(l.from!==id||!l.to)return;let v;
-      if(l.mode==='add'){if(!d)return;v=acc.get(l.to)+d*(+l.k||0)}else if(l.mode==='set')v=nv*(+l.k||0)+(+l.c||0);else v=Math.floor((nv-10)/2)+(+l.c||0);
+      if(l.mode==='add'){if(!d)return;const r=l.m!=null?(+l.m||0)/(+l.n||1):(+l.k||0);v=acc.get(l.to)+d*r}else if(l.mode==='reach'){const th=+l.n||0;if(old<th&&nv>=th)v=l.act==='set'?+l.m||0:acc.get(l.to)+(+l.m||0);else if(old>=th&&nv<th&&l.act!=='set')v=acc.get(l.to)-(+l.m||0);else return}else if(l.mode==='set')v=nv*(+l.k||0)+(+l.c||0);else v=Math.floor((nv-10)/2)+(+l.c||0);
       go(l.to,v)})};
   go(id,nv)}
 function recalcLinks(t,acc){[...new Set((t.links||[]).filter(l=>l.mode!=='add').map(l=>l.from))].forEach(f=>changeNum(t,acc,f,acc.get(f)))}
@@ -635,7 +640,7 @@ $('#wd-newmap').onclick=()=>{const m=modal('New map',`<label class="lbl">Map nam
   wireSizes(m,i=>{$('#nm-grid',m).checked=MAP_SIZES[i][3];$('#nm-name',m).value=MAP_SIZES[i][0].replace(/,.*/,'')})};
 
 /* ================= CARD EDITOR ================= */
-const CE={tpl:null,sel:null,zoom:1,pan:{x:0,y:0},hist:[],fut:[],snap:true,preview:false,pv:null,tool:'move',editing:null,rer:false,
+const CE={tpl:null,sel:null,zoom:1,pan:{x:0,y:0},hist:[],fut:[],snap:true,preview:false,pv:null,tool:'move',tab:'text',editing:null,rer:false,
   td:{font:'Spectral',size:40,color:'#2a1d10',bold:false,italic:false,align:'left'}};
 const cStage=$('#c-stage'),cWorld=$('#c-world'),cOpts=$('#c-opts');
 const cTools=h('<div></div>'),cProps=h('<div></div>'),cText=h('<div></div>');
@@ -785,7 +790,7 @@ cOpts.addEventListener('click',e=>{const a=e.target.closest('[data-align]');if(a
 let ornColor='#8a6a3e';
 function renderTools(){const t=CE.tpl,L=t.layout,b=t.bg;
   cTools.innerHTML=`
-  <div class="sec"><h4>Text and numbers</h4><div class="btns"><button class="btn sm pri" data-act="ttool">Text tool (T)</button><button class="btn sm" data-act="group">Text group</button><button class="btn sm" data-act="box">Text box</button><button class="btn sm" data-act="num">Number bar</button><button class="btn sm" data-act="pm">+ / − button</button></div>
+  <div class="sec"><h4>Text and numbers</h4><div class="btns"><button class="btn sm pri" data-act="ttool">Text tool (T)</button><button class="btn sm" data-act="group">Text group</button><button class="btn sm" data-act="box">Text box</button><button class="btn sm" data-act="num">Number bar</button><button class="btn sm" data-act="pm">+ / − button</button><button class="btn sm" data-act="rules">Connections</button></div>
     <p class="tip">Boxes and number bars go into the selected group, or a new one. To put text on a picture, select the picture first.</p></div>
   <div class="sec"><h4>Images and decorations</h4>
     <div class="btns"><button class="btn sm pri" data-act="png">Add image (PNG, JPG)</button><button class="btn sm" data-act="rect">Rectangle</button><button class="btn sm" data-act="ellipse">Ellipse</button><button class="btn sm" data-act="line">Line</button></div>
@@ -811,6 +816,7 @@ cTools.addEventListener('input',e=>{if(e.target.id==='c-snap')CE.snap=e.target.c
 cTools.addEventListener('click',e=>{const a=e.target.closest('[data-act],[data-orn]');if(!a)return;commitInline();const t=CE.tpl,c=viewCenterCard(),s=Math.min(t.w,t.h),fs=baseFs();
   if(a.dataset.orn){const k=a.dataset.orn,wide=['divider','banner'].includes(k),w=R(wide?s*.6:s*.2),hh=R(wide?(k==='divider'?s*.04:s*.14):s*.2);addItem({id:uid(),type:'orn',orn:k,color:ornColor,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1});return}
   switch(a.dataset.act){
+    case 'rules':CE.tab='rules';renderText();cWins[2].classList.remove('min');cWins[2].style.zIndex=++zTop;break;
     case 'ttool':setCTool('text');toast('Text tool: click the card to type, or drag to draw a text box');break;
     case 'bgimg':pickFiles('image/*',false,fs2=>readImages(fs2,src=>{pushHist();const id='a'+uid();W.assets[id]=src;t.bg.img=id;save();renderTools();renderCard()}));break;
     case 'bgclear':pushHist();t.bg.img=null;save();renderTools();renderCard();break;
@@ -829,20 +835,42 @@ const geo=it=>`<div class="r4">${F.num('x','X',R(it.x))}${F.num('y','Y',R(it.y))
 const rotOp=it=>`${F.range('rot','Rotation',it.rot||0,-180,180,1)}${F.range('opacity','Opacity',it.opacity??1,0,1,.05)}`;
 const numN=(k,l,v)=>`<label class="m"><span>${l}</span><input type="number" data-k="${k}" data-null="1" value="${nn(v)?v:''}" placeholder="none" step="any"></label>`;
 const ALIGNS=[['left','Left'],['center','Centre'],['right','Right']];
-const LMODES=[['add','Add the change ×'],['set','Set to this ×'],['mod','Set to D&D modifier']];
+const TRIG=[['add','goes up by'],['reach','reaches'],['set','changes → formula'],['mod','changes → D&D modifier']];
 const numChoices=(t,except)=>numBoxesOf(t).filter(x=>x.b.id!==except).map(x=>[x.b.id,`${x.g.name} › ${x.b.label}`]);
 const sgn=v=>(+v<0?'− ':'+ ')+Math.abs(+v);
-function linkText(t,l,src){const to=l.to?boxName(t,l.to):'…',sn=src.label;
-  if(l.mode==='add')return `When ${sn} goes up by 1, ${to} changes by ${+l.k>0?'+':''}${l.k}.`;
-  if(l.mode==='set')return `${to} = ${sn} × ${l.k}${+l.c?' '+sgn(l.c):''}`;
-  return `${to} = (${sn} − 10) ÷ 2, rounded down${+l.c?' '+sgn(l.c):''}. For example 16 gives +3.`}
-function linksHTML(it){const t=CE.tpl,ls=t.links.filter(l=>l.from===it.id),inc=t.links.filter(l=>l.to===it.id),ch=numChoices(t,it.id);
-  return `<div class="sec"><h4>Connections</h4><p class="tip" style="margin:0 0 6px">When this number changes, other number bars change too.</p>
-  ${ls.map(l=>`<div class="lnk" data-lid="${l.id}"><select data-lk="to"><option value="">Choose a number bar…</option>${ch.map(([v,n])=>`<option value="${v}"${v===l.to?' selected':''}>${esc(n)}</option>`).join('')}</select>
-    <div class="lrow"><select data-lk="mode">${LMODES.map(([v,n])=>`<option value="${v}"${v===l.mode?' selected':''}>${n}</option>`).join('')}</select>${l.mode!=='mod'?`<input type="number" data-lk="k" value="${l.k}" step="any" title="Multiplier">`:''}${l.mode!=='add'?`<span class="pl">+</span><input type="number" data-lk="c" value="${l.c}" step="any" title="Plus">`:''}<button class="x" data-dellink title="Remove connection">×</button></div>
-    <p class="tip lx">${esc(linkText(t,l,it))}</p></div>`).join('')}
-  <button class="btn sm" data-act="addlink">+ Add connection</button>
-  ${inc.length?`<p class="tip">Changed by: ${inc.map(l=>esc(boxName(t,l.from))).join(', ')}</p>`:''}</div>`}
+const plusMinus=v=>(+v>0?'+':'')+String(+v).replace('-','−');
+const shortName=(t,id)=>{const b=id&&findBoxIn(t,id);return b?b.label:'…'};
+function ruleText(t,l){const A=shortName(t,l.from),B=shortName(t,l.to);
+  if(l.mode==='add'){const n=l.n??1,m=l.m??l.k??1;return `Every time ${A} goes up by ${n}, ${B} changes by ${plusMinus(m)}. When ${A} goes down, it works backwards.`}
+  if(l.mode==='reach'){const n=l.n??1,m=l.m??1;return `When ${A} reaches ${n} or more, ${B} ${l.act==='set'?'is set to '+m:'changes by '+plusMinus(m)}.${l.act==='set'?'':` If ${A} drops below ${n} again, that is undone.`}`}
+  if(l.mode==='set')return `${B} always equals ${A} × ${l.k??1}${+(l.c||0)?' '+sgn(l.c):''}.`;
+  return `${B} always equals the D&D modifier of ${A}: (${A} − 10) ÷ 2, rounded down${+(l.c||0)?' '+sgn(l.c):''}. 16 gives +3.`}
+function ruleRow(t,l){const ch=numChoices(t),A=esc(shortName(t,l.from));
+  const opt=(sel)=>`<option value="">Choose a number bar…</option>`+ch.map(([v,n])=>`<option value="${v}"${v===sel?' selected':''}>${esc(n)}</option>`).join('');
+  const nIn=(k,v,ttl)=>`<input type="number" data-lk="${k}" value="${v}" step="any" title="${ttl}" aria-label="${ttl}">`;
+  let then;
+  if(l.mode==='add')then=`<span class="rw">changes by</span>${nIn('m',l.m??l.k??1,'Change amount')}`;
+  else if(l.mode==='reach')then=`<select data-lk="act" aria-label="What happens"><option value="add"${l.act!=='set'?' selected':''}>changes by</option><option value="set"${l.act==='set'?' selected':''}>is set to</option></select>${nIn('m',l.m??1,'Amount')}`;
+  else if(l.mode==='set')then=`<span class="rw">= ${A} ×</span>${nIn('k',l.k??1,'Multiplier')}<span class="rw">+</span>${nIn('c',l.c??0,'Plus')}`;
+  else then=`<span class="rw">= modifier of ${A} +</span>${nIn('c',l.c??0,'Plus')}`;
+  return `<div class="rule" data-lid="${l.id}">
+    <div class="rh"><b>If</b><select data-lk="from" aria-label="Source number bar">${opt(l.from,l.to)}</select><button class="x" data-dellink title="Delete connection">×</button></div>
+    <div class="rl"><select data-lk="mode" aria-label="Trigger">${TRIG.map(([v,n])=>`<option value="${v}"${v===l.mode?' selected':''}>${n}</option>`).join('')}</select>${l.mode==='add'||l.mode==='reach'?nIn('n',l.n??1,'Trigger amount'):''}</div>
+    <div class="rh"><b>Then</b><select data-lk="to" aria-label="Target number bar">${opt(l.to,l.from)}</select></div>
+    <div class="rl">${then}</div>
+    <p class="tip lx">${esc(ruleText(t,l))}</p></div>`}
+function linksHTML(it){const t=CE.tpl,ls=t.links.filter(l=>l.from===it.id||l.to===it.id);
+  return `<div class="sec"><h4>Connections</h4>${ls.map(l=>ruleRow(t,l)).join('')||'<p class="tip" style="margin:0 0 6px">Not connected to anything yet.</p>'}<button class="btn sm" data-act="addlink">+ New connection</button><p class="tip">Every connection on this card is also in the Connections tab on the right.</p></div>`}
+function newRule(from){const t=CE.tpl,nb=numBoxesOf(t);if(nb.length<2){toast('Add at least two number bars first, then connect them');return null}
+  const f=from&&nb.find(x=>x.b.id===from)?from:nb[0].b.id,to=(nb.find(x=>x.b.id!==f)||{b:{}}).b.id;
+  const l={id:uid(),from:f,to,mode:'add',n:1,m:1,k:1,c:0,act:'add'};t.links.push(l);return l}
+function ruleInput(t){const row=t.closest('[data-lid]');if(!row||!t.dataset.lk)return false;const l=CE.tpl.links.find(x=>x.id===row.dataset.lid);if(!l)return true;
+  const k=t.dataset.lk;let v=t.value;if(['n','m','k','c'].includes(k)){v=parseFloat(v);if(isNaN(v))return true;if(k==='n'&&l.mode==='add'&&!v)return true}
+  l[k]=v;if(k==='from'&&v&&l.to===v)l.to='';if(k==='to'&&v&&l.from===v)l.from='';if(k==='mode'){if(l.n==null)l.n=1;if(l.m==null)l.m=l.k??1;if(l.k==null)l.k=1;if(l.c==null)l.c=0;l.act=l.act||'add'}
+  recalcLinks(CE.tpl,tplAcc(CE.tpl));renderCard();save();
+  if(['mode','from','to','act'].includes(k)){renderProps();renderText()}else $$(`[data-lid="${l.id}"] .lx`).forEach(x=>x.textContent=ruleText(CE.tpl,l));
+  $$('[data-numval]').forEach(x=>{if(document.activeElement!==x){const b=findBoxIn(CE.tpl,x.dataset.numval);if(b)x.value=b.value}});return true}
+function ruleClick(e){const d=e.target.closest('[data-dellink]');if(!d)return false;const row=d.closest('[data-lid]');pushHist();CE.tpl.links=CE.tpl.links.filter(l=>l.id!==row.dataset.lid);save();renderProps();renderText();return true}
 function renderProps(){const f=CE.sel&&findItem(CE.sel);
   if(!f){cProps.innerHTML=`<p class="muted" style="margin:8px 0">Select something on the card to edit its colour, place, name and size. Double-click any text to type on the card.</p>`;return}
   const it=f.item;let s='';
@@ -878,12 +906,9 @@ bindForm(cProps,()=>{const f=CE.sel&&findItem(CE.sel);return f&&f.item},(t,k)=>{
 function onNumInput(inp,root){const v=parseFloat(inp.value);if(isNaN(v))return;changeNum(CE.tpl,tplAcc(CE.tpl),inp.dataset.numval,v);renderCard();save();
   $$('[data-numval]').forEach(x=>{if(x!==inp){const b=findBoxIn(CE.tpl,x.dataset.numval);if(b)x.value=b.value}})}
 cProps.addEventListener('focusin',e=>{if(e.target.matches('[data-lk],[data-numval]'))pushHist()});
-cProps.addEventListener('input',e=>{const t=e.target;if(t.dataset.numval){onNumInput(t);return}
-  if(t.dataset.lk){const row=t.closest('[data-lid]'),l=CE.tpl.links.find(x=>x.id===row.dataset.lid);if(!l)return;const k=t.dataset.lk;let v=t.value;if(k==='k'||k==='c'){v=parseFloat(v);if(isNaN(v))return}
-    l[k]=v;recalcLinks(CE.tpl,tplAcc(CE.tpl));renderCard();save();
-    if(k==='mode'||k==='to'){renderProps();renderText()}else{const f=findItem(CE.sel);row.querySelector('.lx').textContent=linkText(CE.tpl,l,f.item)}}});
+cProps.addEventListener('input',e=>{const t=e.target;if(t.dataset.numval){onNumInput(t);return}ruleInput(t)});
 cProps.addEventListener('click',e=>{
-  if(e.target.closest('[data-dellink]')){const row=e.target.closest('[data-lid]');pushHist();CE.tpl.links=CE.tpl.links.filter(l=>l.id!==row.dataset.lid);save();renderProps();return}
+  if(ruleClick(e))return;
   const a=e.target.closest('[data-act]');if(!a)return;const f=findItem(CE.sel);if(!f)return;const it=f.item,arr=f.parent?f.parent.boxes:CE.tpl.items,i=arr.indexOf(it),fs=baseFs();pushHist();
   switch(a.dataset.act){
     case 'front':arr.splice(i,1);arr.push(it);break;
@@ -895,7 +920,7 @@ cProps.addEventListener('click',e=>{
     case 'addbox':case 'addnum':{const b=a.dataset.act==='addnum'?newNumBox('Number',it.boxes[0]?it.boxes[0].size:fs):newBox('Field '+(it.boxes.length+1),it.boxes[0]?it.boxes[0].size:fs);if(it.boxes[0])['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius'].forEach(k=>b[k]=it.boxes[0][k]);it.boxes.push(b);arrange(it,it.boxes.length>4?'g':'v');break}
     case 'ratio':{const im=new Image();im.onload=()=>{it.h=R(it.w*im.naturalHeight/im.naturalWidth);renderCard();renderProps();save()};im.src=W.assets[it.asset];break}
     case 'fill':Object.assign(it,{x:0,y:0,w:CE.tpl.w,h:CE.tpl.h,rot:0});break;
-    case 'addlink':{const ch=numChoices(CE.tpl,it.id);if(!ch.length){toast('Add another number bar first, then connect them');break}CE.tpl.links.push({id:uid(),from:it.id,to:ch[0][0],mode:'add',k:1,c:0});break}
+    case 'addlink':newRule(it.id);break;
     case 'pmbtns':{const g=f.parent,bs=R(clamp(it.h*.5,22,90)),gp=R(bs*.2);let x=g.x+it.x+it.w+gp;const y=g.y+it.y+(it.h-bs)/2;if(x+2*bs+gp>CE.tpl.w)x=g.x+it.x+it.w-2*bs-gp*2;
       const st=+it.step||1,mi=newBtn('−',-st,it.id,x,y,bs),pl=newBtn('+',st,it.id,x+bs+gp,y,bs);attachTo(mi,g);attachTo(pl,g);CE.tpl.items.push(mi,pl);CE.sel=pl.id;toast('Buttons added and locked to the group');break}
     case 'img-group':{const g=frameless(newGroup('Text group',it.x+it.w*.15,it.y+it.h*.3,it.w*.7,it.h*.4,['Field 1','Field 2'],'v',fs));arrange(g,'v');g.boxes.forEach(b=>{b.bgOpacity=.25;b.borderW=0});attachTo(g,it);CE.tpl.items.push(g);CE.sel=g.id;break}
@@ -907,18 +932,21 @@ cProps.addEventListener('click',e=>{
 let textFilter='';
 const rowsOf=s=>Math.min(6,Math.max(1,(String(s).match(/\n/g)||[]).length+1));
 function renderText(){const t=CE.tpl,groups=t.items.filter(i=>i.type==='group'),texts=t.items.filter(i=>i.type==='text'),q=textFilter.toLowerCase();
+  const tabs=`<div class="tabs"><button class="tg${CE.tab!=='rules'?' on':''}" data-tab="text">Text and numbers</button><button class="tg${CE.tab==='rules'?' on':''}" data-tab="rules">Connections${t.links.length?' ('+t.links.length+')':''}</button></div>`;
+  if(CE.tab==='rules'){const nb=numBoxesOf(t);cText.innerHTML=`<div class="tphead">${tabs}</div>`+(nb.length<2?`<p class="muted">Add at least two number bars, then connect them here. Use “Number bar” in Card tools.</p>`
+    :`<p class="tip" style="margin:4px 0 8px">Pick two number bars and what should happen. For example: If STR goes up by 1, then Carry weight changes by +15.</p>${t.links.map(l=>ruleRow(t,l)).join('')||'<p class="muted">No connections yet.</p>'}<button class="btn sm pri" data-act="newrule" style="width:100%;justify-content:center;margin-top:4px">+ New connection</button>`);return}
   const boxRow=b=>b.kind==='number'
     ?`<div class="tpb" data-bid="${b.id}"><div class="tpbh"><input type="text" data-blabel="${b.id}" value="${esc(b.label)}" aria-label="Number bar name"><span class="badge">number</span><button class="x" data-delb="${b.id}" title="Delete">×</button></div><input type="number" data-numval="${b.id}" value="${b.value}" step="any"></div>`
     :`<div class="tpb" data-bid="${b.id}"><div class="tpbh"><input type="text" data-blabel="${b.id}" value="${esc(b.label)}" aria-label="Box name"><button class="x" data-delb="${b.id}" title="Delete">×</button></div><textarea data-id="${b.id}" rows="${rowsOf(b.text)}" placeholder="Text players will see…">${esc(b.text)}</textarea></div>`;
-  cText.innerHTML=`<div style="position:sticky;top:0;background:var(--panel);padding:8px 0 2px;z-index:1"><input type="text" id="tp-q" placeholder="Find a box…" value="${esc(textFilter)}"></div>`+
+  cText.innerHTML=`<div class="tphead">${tabs}<input type="text" id="tp-q" placeholder="Find a box…" value="${esc(textFilter)}"></div>`+
   (groups.length?groups.map(g=>{const bx=g.boxes.filter(b=>!q||(b.label+' '+(b.text||'')+' '+g.name).toLowerCase().includes(q));if(q&&!bx.length)return'';
     return `<div class="tpg" data-gid="${g.id}"><div class="tpgh" data-pick="${g.id}"><span class="sw" style="background:${g.borderColor}"></span><input type="text" data-gname="${g.id}" value="${esc(g.name)}" aria-label="Group name"><button class="x" data-delg="${g.id}" title="Delete group">×</button></div>
     ${bx.map(boxRow).join('')}<div class="tpadds"><button class="tpadd" data-addb="${g.id}">+ Text box</button><button class="tpadd" data-addn="${g.id}">+ Number bar</button></div></div>`}).join(''):`<p class="muted">No groups yet. Use “Text group” or “Number bar” in Card tools.</p>`)+
   (texts.length?`<div class="tpg"><div class="tpgh"><b style="flex:1;padding:4px 0">Free text</b></div>${texts.filter(x=>!q||x.text.toLowerCase().includes(q)).map(x=>`<div class="tpb" data-bid="${x.id}"><div class="tpbh"><span class="muted" style="flex:1;font-size:12.5px">Text${x.locked?' · locked':''}</span><button class="x" data-delt="${x.id}" title="Delete">×</button></div><textarea data-id="${x.id}" rows="${rowsOf(x.text)}">${esc(x.text)}</textarea></div>`).join('')}</div>`:'');
   markText()}
 function markText(){const f=CE.sel&&findItem(CE.sel);$$('.tpg',cText).forEach(g=>g.classList.toggle('on',!!f&&!!g.dataset.gid&&(f.item.id===g.dataset.gid||(f.parent&&f.parent.id===g.dataset.gid))));$$('.tpb',cText).forEach(b=>b.classList.toggle('on',!!f&&f.item.id===b.dataset.bid))}
-cText.addEventListener('focusin',e=>{if(e.target.matches('textarea,[data-gname],[data-blabel],[data-numval]')){pushHist();const id=e.target.dataset.id||e.target.dataset.blabel||e.target.dataset.gname||e.target.dataset.numval;if(id&&CE.sel!==id){CE.sel=id;renderCard();renderProps();renderOpts();markText()}}});
-cText.addEventListener('input',e=>{const t=e.target;
+cText.addEventListener('focusin',e=>{if(e.target.matches('[data-lk]')){pushHist();return}if(e.target.matches('textarea,[data-gname],[data-blabel],[data-numval]')){pushHist();const id=e.target.dataset.id||e.target.dataset.blabel||e.target.dataset.gname||e.target.dataset.numval;if(id&&CE.sel!==id){CE.sel=id;renderCard();renderProps();renderOpts();markText()}}});
+cText.addEventListener('input',e=>{const t=e.target;if(ruleInput(t))return;
   if(t.id==='tp-q'){textFilter=t.value;renderText();const q=$('#tp-q',cText);q.focus();q.setSelectionRange(q.value.length,q.value.length);return}
   if(t.dataset.numval){onNumInput(t);return}
   const f=findItem(t.dataset.id||t.dataset.blabel||t.dataset.gname);if(!f)return;
@@ -926,6 +954,9 @@ cText.addEventListener('input',e=>{const t=e.target;
   renderCard();save();if(t.dataset.id)t.rows=rowsOf(t.value);
   const pi=$('[data-k="label"],[data-k="name"],[data-k="text"]',cProps);if(pi)pi.value=t.value});
 cText.addEventListener('click',e=>{const t=e.target;
+  const tb=t.closest('[data-tab]');if(tb){CE.tab=tb.dataset.tab;renderText();return}
+  if(ruleClick(e))return;
+  if(t.closest('[data-act="newrule"]')){pushHist();const f=CE.sel&&findItem(CE.sel);if(newRule(f&&f.item.kind==='number'?f.item.id:null)){save();renderText();renderProps()}return}
   if(t.dataset.delg){pushHist();CE.tpl.items=CE.tpl.items.filter(i=>i.id!==t.dataset.delg);CE.sel=null;save();renderCard();renderProps();renderText();renderOpts();return}
   if(t.dataset.delt){pushHist();CE.tpl.items=CE.tpl.items.filter(i=>i.id!==t.dataset.delt);if(CE.sel===t.dataset.delt)CE.sel=null;save();renderCard();renderProps();renderText();renderOpts();return}
   if(t.dataset.delb){const f=findItem(t.dataset.delb);pushHist();f.parent.boxes=f.parent.boxes.filter(b=>b!==f.item);if(CE.sel===f.item.id)CE.sel=null;save();renderCard();renderProps();renderText();renderOpts();return}
