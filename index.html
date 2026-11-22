@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Worldforge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=IM+Fell+English:ital@0;1&family=Inter:wght@400;500;600&family=MedievalSharp&family=Spectral:ital,wght@0,400;0,600;1,400&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a quiet, capable workshop tool for a game writer; the work is the star
+   IDEA: a cartographer's and scribe's desk: dark bench, parchment cards, brass accents
+   PICTURE: the card / map canvas itself, floating panels around it like tools on a desk
+   COLOUR and TYPE: ink-black bench, parchment, one brass accent; Cinzel for titles, Inter for UI
+   LAYOUT: full-screen editors with movable windows; simple list screens for worlds */
+:root,:root[data-theme=light],:root[data-theme=dark]{color-scheme:dark;
+--bg:#0a090c;--panel:#141217;--panel2:#1c1920;
+--line:#2a2630;--ink:#e6e0d6;--mute:#8a8394;
+--acc:#d9a744;--acc-ink:#140f04;--sel:#4b93ff;--danger:#ff6b61;
+--stage:#050407;--dot:#16141a}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,sans-serif;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column}
+.screen[hidden]{display:none}
+.scroll-screen{overflow:auto}
+h1,h2,h3{font-family:Cinzel,serif;font-weight:700;line-height:1.1;margin:0;text-wrap:balance}
+.muted{color:var(--mute)}
+.btn{height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--acc)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.role:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.btn.pri{background:var(--acc);color:var(--acc-ink);border-color:transparent}
+.btn.ghost{background:transparent}
+.btn.danger{background:var(--danger);color:#fff;border-color:transparent}
+.btn.sm{height:30px;padding:0 10px;font-size:13px}
+.btn.on{background:var(--acc);color:var(--acc-ink);border-color:transparent}
+.btn:disabled{opacity:.4;cursor:default}
+input[type=text],input[type=password],input[type=number],select,textarea{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px 8px;height:30px;width:100%}
+textarea{height:auto;resize:vertical;line-height:1.4;padding:6px 8px}
+input[type=color]{width:100%;height:30px;padding:2px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);cursor:pointer}
+input[type=range]{width:100%;accent-color:var(--acc)}
+input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
+/* role screen */
+#scr-role{align-items:center;justify-content:center;background:radial-gradient(1200px 600px at 50% 0%,light-dark(#f7f1e4,#2a2130),var(--bg))}
+.role-wrap{width:min(860px,92vw);padding:32px 0}
+.brand{font-size:clamp(40px,7vw,64px);letter-spacing:.04em;color:var(--acc)}
+.lede{font-size:17px;color:var(--mute);margin:10px 0 28px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.role{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:22px;cursor:pointer;display:grid;gap:8px;transition:transform .15s,border-color .15s}
+.role:hover{transform:translateY(-3px);border-color:var(--acc)}
+.role svg{width:100%;height:150px;border-radius:10px;background:light-dark(#efe3c8,#2a2430)}
+.role b{font:700 24px Cinzel,serif}
+.role span{color:var(--mute);font-size:15px}
+/* list screens */
+.page{width:min(1180px,94vw);margin:0 auto;padding:28px 0 60px}
+.pagehead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:22px}
+.pagehead h1{font-size:clamp(28px,4vw,40px);flex:1}
+.crumb{color:var(--mute);font-size:13px;margin-bottom:6px;display:flex;gap:6px;align-items:center}
+.crumb button{background:none;border:0;color:var(--acc);cursor:pointer;padding:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.tile:hover{border-color:var(--acc)}
+.thumb{height:200px;background:var(--stage);position:relative;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.thumb img{max-width:100%;max-height:100%;display:block}
+.tscale{position:absolute;transform-origin:0 0;pointer-events:none}
+.tbody{padding:12px 14px;display:grid;gap:4px}
+.tbody h3{font-size:18px}
+.tbody p{margin:0;color:var(--mute);font-size:13px}
+.tacts{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 14px}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:36px;text-align:center;color:var(--mute);grid-column:1/-1}
+.sechead{display:flex;align-items:center;gap:12px;margin:30px 0 12px}
+.sechead h2{font-size:22px;flex:1}
+.wname{font:700 clamp(26px,4vw,38px) Cinzel,serif;background:transparent;border:1px solid transparent;border-radius:8px;height:auto;padding:2px 6px;margin-left:-7px}
+.wname:hover,.wname:focus{border-color:var(--line)}
+.wdesc{max-width:720px;min-height:60px}
+.status{font-size:12px;color:var(--mute);white-space:nowrap}
+.pstatus{font-size:12px;color:var(--mute);white-space:nowrap}
+.hero{position:relative;min-height:260px;display:flex;align-items:flex-end;border-bottom:1px solid var(--line)}
+.hero-art{position:absolute;inset:0;width:100%;height:100%}
+.hero-in{position:relative;padding:40px 0 26px}
+.hero .lede{margin:8px 0 0}
+.foot{margin-top:40px;text-align:center}
+.linkbtn{background:none;border:0;color:var(--mute);cursor:pointer;text-decoration:underline;font-size:13px}
+.note{background:color-mix(in srgb,var(--acc) 14%,var(--panel));border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);border-radius:10px;padding:10px 14px;margin:8px 0 14px;font-size:14px}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--panel2);border:1px solid var(--line);color:var(--mute)}
+.badge.live{color:#7fd08a;border-color:#2f5a36;background:#13221a}
+.badge.stale{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.ptb{padding:8px 0;border-top:1px solid var(--line)}
+.ptb:first-child{border:0}
+.ptb label{display:block;font-size:12.5px;color:var(--mute);margin-bottom:4px}
+.ptb.on label{color:var(--sel)}
+#pc-stage .it-box{cursor:text}
+#pc-stage,#pm-stage{cursor:grab}
+/* editor bars */
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);z-index:20;position:relative}
+.bar .title-in{width:220px;font-weight:600;background:transparent;border-color:transparent}
+.bar .title-in:hover,.bar .title-in:focus{border-color:var(--line)}
+.bar .sp{flex:1}
+.bar .grp{display:flex;gap:4px;align-items:center}
+.zl{min-width:52px;text-align:center;font-size:13px;color:var(--mute)}
+.dims{font-size:12px;color:var(--mute)}
+/* stage */
+.stage{position:relative;flex:1;overflow:hidden;background-color:var(--stage);background-image:radial-gradient(var(--dot) 1px,transparent 1px);background-size:22px 22px;touch-action:none}
+.world{position:absolute;left:0;top:0;transform-origin:0 0}
+.stage.pan,.stage.pan *{cursor:grab!important}
+.stage.panning,.stage.panning *{cursor:grabbing!important}
+.wins{position:absolute;inset:0;pointer-events:none;z-index:10}
+.hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-size:12px;color:var(--mute);background:var(--panel);border:1px solid var(--line);padding:4px 10px;border-radius:20px;pointer-events:none;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+/* floating windows */
+.win{position:absolute;pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 36px rgba(0,0,0,.3);display:flex;flex-direction:column;max-width:calc(100vw - 16px)}
+.wh{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;cursor:move;border-bottom:1px solid var(--line);user-select:none;touch-action:none}
+.wh b{flex:1;font-size:13px}
+.grip{width:10px;height:14px;background:radial-gradient(var(--mute) 1.2px,transparent 1.3px) 0 0/5px 5px;opacity:.7}
+.wmin{width:26px;height:24px;border:0;background:transparent;cursor:pointer;color:var(--mute);border-radius:4px;font-size:16px;line-height:1}
+.wmin:hover{background:var(--panel2)}
+.win.min .wb{display:none}
+.win.min{border-radius:10px}
+.wb{overflow:auto;padding:4px 12px 12px}
+.sec{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}
+.sec:first-child{border:0;margin-top:0}
+.sec h4{margin:4px 0 6px;font:600 12px Inter;color:var(--mute)}
+.f{display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;gap:8px;margin:6px 0}
+.f>span{color:var(--mute);font-size:12.5px}
+.f.chk{grid-template-columns:96px auto}
+.r2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 8px}
+.r4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.m{display:flex;flex-direction:column;gap:2px}
+.m>span{color:var(--mute);font-size:11.5px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.orns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0}
+.orns button{height:48px;border:1px solid var(--line);background:var(--panel2);border-radius:6px;cursor:pointer;padding:6px}
+.orns button:hover{border-color:var(--acc)}
+.orns svg{width:100%;height:100%;display:block}
+.tip{font-size:12px;color:var(--mute);margin:8px 0 0}
+/* card render */
+.card{position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.cbg,.cborder{position:absolute;inset:0;pointer-events:none}
+.lpanel{position:absolute;pointer-events:none;box-sizing:border-box}
+.it{position:absolute;box-sizing:border-box;user-select:none}
+.editing .it{cursor:move}
+.it img{width:100%;height:100%;display:block;pointer-events:none}
+.it svg{width:100%;height:100%;display:block;overflow:visible}
+.it-box{overflow:hidden;padding:.2em .45em;display:flex;flex-direction:column}
+.blabel{font-family:Inter,sans-serif;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btext{white-space:pre-wrap;overflow-wrap:anywhere;flex:1;line-height:1.25;overflow:hidden}
+.gtitle{position:absolute;left:12px;top:6px;line-height:1.2;pointer-events:none;white-space:nowrap}
+.it.sel{outline:calc(2px*var(--iz,1)) solid var(--sel);outline-offset:0}
+.it.hov{outline:calc(1px*var(--iz,1)) dashed var(--sel)}
+.hdl{position:absolute;right:0;bottom:0;width:calc(14px*var(--iz,1));height:calc(14px*var(--iz,1));background:#fff;border:calc(2px*var(--iz,1)) solid var(--sel);cursor:nwse-resize!important;z-index:3}
+.preview .it.sel{outline:none}.preview .hdl,.preview .wins,.preview .hint{display:none}
+/* text panel */
+.tpg{border:1px solid var(--line);border-radius:8px;margin:8px 0;background:var(--panel2)}
+.tpg.on{border-color:var(--sel)}
+.tpgh{display:flex;gap:6px;align-items:center;padding:6px 6px 6px 8px;cursor:pointer}
+.tpgh input{font-weight:600;background:transparent;border-color:transparent}
+.tpgh input:focus{border-color:var(--line);background:var(--panel)}
+.sw{width:14px;height:14px;border-radius:4px;flex:none;border:1px solid rgba(0,0,0,.25)}
+.tpb{padding:6px 8px;border-top:1px solid var(--line)}
+.tpb.on{background:color-mix(in srgb,var(--sel) 12%,transparent)}
+.tpbh{display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.tpbh input{height:26px;font-size:12.5px;color:var(--mute)}
+.x{width:26px;height:26px;flex:none;border:0;border-radius:5px;background:transparent;cursor:pointer;color:var(--mute);font-size:16px}
+.x:hover{background:var(--panel);color:var(--danger)}
+.tpadd{width:100%;border:0;border-top:1px solid var(--line);background:transparent;padding:7px;cursor:pointer;color:var(--acc);font-weight:500;border-radius:0 0 8px 8px}
+.tpadd:hover{background:var(--panel)}
+/* map */
+.mclip{position:absolute;left:0;top:0;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.mbg,.mclip canvas,.mgrid{position:absolute;left:0;top:0}
+.mgrid{pointer-events:none}
+.mimg{position:absolute;transform-origin:center;user-select:none;-webkit-user-drag:none}
+.t-brush .mimg,.t-eraser .mimg,.t-hand .mimg{pointer-events:none}
+.t-move .mimg{cursor:move}
+.t-brush .stage,.t-eraser .stage{cursor:crosshair}
+.t-hand .stage{cursor:grab}
+.msel{position:absolute;outline:calc(2px*var(--iz,1)) solid var(--sel);pointer-events:none;transform-origin:center}
+.msel .hdl{pointer-events:auto}
+.bcur{position:absolute;left:0;top:0;border:1px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.6);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);display:none;z-index:4}
+.tools4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.tools4 .btn{justify-content:center;padding:0 4px;flex-direction:column;height:46px;gap:0;font-size:12px}
+.tools4 .btn kbd{font:11px Inter;opacity:.7}
+.swatches{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
+.swatches button{width:22px;height:22px;border-radius:5px;border:1px solid rgba(0,0,0,.3);cursor:pointer}
+.ly{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid transparent;border-radius:6px;cursor:pointer}
+.ly.on{border-color:var(--sel);background:color-mix(in srgb,var(--sel) 12%,transparent)}
+.ly .lt{width:34px;height:26px;flex:none;border-radius:4px;background:var(--panel2);border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--mute)}
+.ly .lt img{max-width:100%;max-height:100%}
+.ly input{height:26px;background:transparent;border-color:transparent;font-size:13px}
+.ly input:focus{border-color:var(--line)}
+.ly .x{width:24px;height:24px;font-size:13px}
+.ly .x.off{opacity:.35}
+/* modal */
+.mback{position:fixed;inset:0;background:rgba(10,8,14,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(560px,100%);max-height:90vh;overflow:auto;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.modal h2{font-size:24px;margin-bottom:14px}
+.mbody p{margin:0 0 10px}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
+.sizes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0 12px}
+.size{border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;background:var(--panel2);display:grid;gap:6px;justify-items:center;text-align:center;font-size:12.5px}
+.size.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.size i{display:block;background:light-dark(#efe3c8,#4a3f33);border:1px solid var(--acc);border-radius:3px}
+.size small{color:var(--mute)}
+.lbl{display:block;font-size:12.5px;color:var(--mute);margin:10px 0 4px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:20px;z-index:200;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:700px){.bar .title-in{width:140px}.dims,.bar .status{display:none}}
+</style>
+</head>
+<body>
+
+<!-- PLAYER: HOME -->
+<section class="screen scroll-screen" id="scr-home">
+  <div class="hero">
+    <svg class="hero-art" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1520"/><stop offset="1" stop-color="#0a090c"/></linearGradient></defs>
+      <rect width="1200" height="260" fill="url(#hg)"/>
+      <g fill="#d9a744" opacity=".5"><circle cx="140" cy="50" r="1.5"/><circle cx="380" cy="30" r="1"/><circle cx="520" cy="70" r="1.6"/><circle cx="760" cy="40" r="1.2"/><circle cx="930" cy="80" r="1.5"/><circle cx="1080" cy="34" r="1"/></g>
+      <path d="M0 230 L120 150 L200 200 L320 110 L430 190 L540 130 L650 210 L780 120 L880 180 L1000 100 L1110 170 L1200 140 V260 H0Z" fill="#141217"/>
+      <path d="M0 260 L160 200 L300 240 L470 180 L620 245 L800 190 L960 240 L1100 205 L1200 230 V260Z" fill="#0a090c"/>
+      <circle cx="1010" cy="70" r="26" fill="none" stroke="#d9a744" stroke-width="1.5" opacity=".7"/>
+    </svg>
+    <div class="page hero-in">
+      <h1 class="brand">Worldforge</h1>
+      <p class="lede">Choose a world to explore its maps and make your character.</p>
+    </div>
+  </div>
+  <div class="page" style="padding-top:8px">
+    <div class="grid" id="h-list"></div>
+    <p class="foot"><button class="linkbtn" id="h-writer" hidden>Open the Writer</button></p>
+  </div>
+</section>
+
+<!-- PLAYER: WORLD -->
+<section class="screen scroll-screen" id="scr-pworld" hidden>
+  <div class="page">
+    <div class="crumb"><button id="pw-back">Worlds</button></div>
+    <div class="note" id="pw-preview" hidden>Preview: this is how players will see your local copy of the world.</div>
+    <div class="pagehead"><h1 id="pw-name"></h1></div>
+    <p class="lede" id="pw-desc" style="margin-top:0;white-space:pre-wrap"></p>
+    <div class="sechead"><h2>Your characters</h2><button class="btn pri" id="pw-newchar">New character</button></div>
+    <div class="grid" id="pw-chars"></div>
+    <div class="sechead"><h2>Maps</h2></div>
+    <div class="grid" id="pw-maps"></div>
+  </div>
+</section>
+
+<!-- PLAYER: CHARACTER -->
+<section class="screen" id="scr-pchar" hidden>
+  <header class="bar">
+    <button class="btn ghost sm" id="pc-back">← World</button>
+    <input class="title-in" id="pc-name" aria-label="Character name">
+    <div class="sp"></div>
+    <div class="grp"><button class="btn sm" id="pc-zout">−</button><span class="zl" id="pc-zl">100%</span><button class="btn sm" id="pc-zin">+</button><button class="btn sm" id="pc-fit">Fit</button></div>
+    <button class="btn sm" id="pc-copy">Copy as text</button>
+    <span class="pstatus"></span>
+  </header>
+  <div class="stage" id="pc-stage"><div class="world" id="pc-world"></div>
+    <div class="hint">Click a box on the card to write in it · drag to move around · scroll to zoom</div></div>
+  <div class="wins" id="pc-wins"></div>
+</section>
+
+<!-- PLAYER: MAP VIEW -->
+<section class="screen" id="scr-pmap" hidden>
+  <header class="bar">
+    <button class="btn ghost sm" id="pm-back">← World</button>
+    <b id="pm-name" style="padding:0 6px"></b>
+    <div class="sp"></div>
+    <div class="grp"><button class="btn sm" id="pm-zout">−</button><span class="zl" id="pm-zl">100%</span><button class="btn sm" id="pm-zin">+</button><button class="btn sm" id="pm-fit">Fit</button></div>
+  </header>
+  <div class="stage" id="pm-stage" style="cursor:grab"><div class="world" id="pm-world"></div>
+    <div class="hint">Drag to move around · scroll to zoom</div></div>
+</section>
+
+<!-- WRITER GATE -->
+<section class="screen scroll-screen" id="scr-gate" hidden>
+  <div class="page" style="max-width:560px">
+    <div class="crumb"><button data-go="home">Worlds</button></div>
+    <h1 style="font-size:34px;margin:6px 0 10px">Writer sign-in</h1>
+    <p class="lede" style="margin-top:0">Only someone who can push to this site's GitHub repository can write here. Sign in with a GitHub token that has write access to it.</p>
+    <label class="lbl">GitHub token</label><input type="password" id="g-token" autocomplete="off" placeholder="github_pat_…">
+    <div class="r2" style="margin-top:8px"><label class="m"><span>Owner</span><input type="text" id="g-owner"></label><label class="m"><span>Repository</span><input type="text" id="g-repo"></label></div>
+    <div class="btns" style="margin-top:14px"><button class="btn pri" id="g-go">Sign in</button></div>
+    <p id="g-msg" class="muted"></p>
+  </div>
+</section>
+
+<!-- WORLDS -->
+<section class="screen scroll-screen" id="scr-worlds" hidden>
+  <div class="page">
+    <div class="crumb"><button data-go="home">Player view</button> / Writer</div>
+    <div class="pagehead">
+      <h1>Your worlds</h1>
+      <span class="status"></span>
+      <button class="btn" id="w-gh">GitHub settings</button>
+      <button class="btn" id="w-import">Import world file</button>
+      <button class="btn pri" id="w-new">Create world</button>
+    </div>
+    <div class="grid" id="world-list"></div>
+  </div>
+</section>
+
+<!-- WORLD -->
+<section class="screen scroll-screen" id="scr-world" hidden>
+  <div class="page">
+    <div class="crumb"><button data-go="worlds">Your worlds</button> / <span id="wd-pub"></span></div>
+    <div class="pagehead">
+      <input class="wname" id="wd-name" aria-label="World name">
+      <span class="status"></span>
+      <button class="btn" id="wd-preview">Preview as player</button>
+      <button class="btn" id="wd-export">Export world</button>
+      <button class="btn pri" id="wd-publish">Publish to players</button>
+    </div>
+    <textarea class="wdesc" id="wd-desc" placeholder="Describe the world: its tone, setting, the hook for your players…" rows="3"></textarea>
+    <div class="sechead"><h2>Player card templates</h2><button class="btn pri" id="wd-newcard">New card template</button></div>
+    <div class="grid" id="wd-cards"></div>
+    <div class="sechead"><h2>Maps</h2><button class="btn pri" id="wd-newmap">New map</button></div>
+    <div class="grid" id="wd-maps"></div>
+  </div>
+</section>
+
+<!-- CARD EDITOR -->
+<section class="screen" id="scr-card" hidden>
+  <header class="bar">
+    <button class="btn ghost sm" id="c-back">← World</button>
+    <input class="title-in" id="c-name" aria-label="Template name">
+    <span class="dims" id="c-dims"></span>
+    <div class="sp"></div>
+    <div class="grp"><button class="btn sm" id="c-undo" title="Undo (Ctrl+Z)">Undo</button><button class="btn sm" id="c-redo" title="Redo (Ctrl+Shift+Z)">Redo</button></div>
+    <div class="grp"><button class="btn sm" id="c-zout" title="Zoom out">−</button><span class="zl" id="c-zl">100%</span><button class="btn sm" id="c-zin" title="Zoom in">+</button><button class="btn sm" id="c-fit">Fit</button></div>
+    <button class="btn sm" id="c-prev">Preview</button>
+    <button class="btn sm ghost" id="c-resetw">Reset windows</button>
+    <span class="status"></span>
+  </header>
+  <div class="stage editing" id="c-stage"><div class="world" id="c-world"></div>
+    <div class="hint">Drag to move · corner handle resizes · scroll to zoom · Space-drag or middle mouse to pan · Double-click a text box to edit its text</div>
+  </div>
+  <div class="wins" id="c-wins"></div>
+</section>
+
+<!-- MAP EDITOR -->
+<section class="screen t-brush" id="scr-map" hidden>
+  <header class="bar">
+    <button class="btn ghost sm" id="m-back">← World</button>
+    <input class="title-in" id="m-name" aria-label="Map name">
+    <span class="dims" id="m-dims"></span>
+    <div class="sp"></div>
+    <div class="grp"><button class="btn sm" id="m-undo" title="Undo (Ctrl+Z)">Undo</button><button class="btn sm" id="m-redo" title="Redo (Ctrl+Shift+Z)">Redo</button></div>
+    <div class="grp"><button class="btn sm" id="m-zout">−</button><span class="zl" id="m-zl">100%</span><button class="btn sm" id="m-zin">+</button><button class="btn sm" id="m-fit">Fit</button><button class="btn sm" id="m-100">100%</button></div>
+    <button class="btn sm ghost" id="m-resetw">Reset windows</button>
+    <span class="status"></span>
+  </header>
+  <div class="stage" id="m-stage"><div class="world" id="m-world"></div><div class="bcur" id="m-cur"></div>
+    <div class="hint">B brush · E eraser · V move · H hand · [ ] brush size · Shift-click for straight lines · scroll to zoom · Space-drag to pan · drop PNGs here</div>
+  </div>
+  <div class="wins" id="m-wins"></div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+{
+/* ================= helpers ================= */
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const R=Math.round;
+const h=html=>{const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild};
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+function hexA(hex,a=1){if(!hex||hex[0]!=='#')return hex||'transparent';let x=hex.slice(1);if(x.length===3)x=[...x].map(c=>c+c).join('');const n=parseInt(x,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+function setPath(o,p,v){const k=p.split('.');while(k.length>1)o=o[k.shift()];o[k[0]]=v}
+function getPath(o,p){return p.split('.').reduce((a,k)=>a==null?a:a[k],o)}
+const typing=e=>{const t=e.target;return t&&(t.tagName==='TEXTAREA'||(t.tagName==='INPUT'&&/text|number|search/.test(t.type))||t.isContentEditable)};
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+function pickFiles(accept,multiple,cb){const i=document.createElement('input');i.type='file';i.accept=accept;i.multiple=multiple;i.onchange=()=>cb([...i.files]);i.click()}
+function readImages(files,cb){files.filter(f=>/^image\//.test(f.type)).forEach(f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>cb(r.result,im.naturalWidth,im.naturalHeight,f.name.replace(/\.[^.]+$/,''));im.src=r.result};r.readAsDataURL(f)})}
+const FONTS={'Spectral':"'Spectral',Georgia,serif",'Cinzel':"'Cinzel',Georgia,serif",'IM Fell English':"'IM Fell English',Georgia,serif",'Uncial Antiqua':"'Uncial Antiqua',Georgia,serif",'MedievalSharp':"'MedievalSharp',Georgia,serif",'Inter':"'Inter',system-ui,sans-serif",'Monospace':"ui-monospace,Menlo,monospace"};
+const fontCSS=f=>FONTS[f]||FONTS.Spectral;
+const fontOpts=Object.keys(FONTS).map(f=>[f,f]);
+
+/* ================= storage ================= */
+let DB={worlds:[]};
+let idbP=null;
+function idbOpen(){return new Promise((res,rej)=>{try{const r=indexedDB.open('worldforge',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
+async function kv(mode,key,val){idbP=idbP||idbOpen();const db=await idbP;return new Promise((res,rej)=>{const st=db.transaction('kv',mode).objectStore('kv');const rq=mode==='readonly'?st.get(key):st.put(val,key);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error)})}
+const saveHooks=[];let saveT;
+function setStatus(s){$$('.status').forEach(e=>e.textContent=s)}
+function save(){if(W&&writerScreens.includes(cur))W.modified=Date.now();clearTimeout(saveT);setStatus('Saving…');saveT=setTimeout(flush,600)}
+async function flush(){clearTimeout(saveT);saveHooks.forEach(f=>{try{f()}catch(e){}});try{await kv('readwrite','db',DB);setStatus('All changes saved in this browser')}catch(e){setStatus('Browser storage unavailable: export your world to keep it')}}
+
+/* ================= modal ================= */
+function modal(title,body,buttons){
+  const m=h(`<div class="mback"><div class="modal" role="dialog" aria-modal="true"><h2>${esc(title)}</h2><div class="mbody">${body}</div><div class="mfoot"></div></div></div>`);
+  const close=()=>m.remove();
+  buttons.forEach(b=>{const el=h(`<button class="btn ${b.cls||''}">${esc(b.label)}</button>`);el.onclick=()=>{if(b.act&&b.act(m)===false)return;close()};$('.mfoot',m).append(el)});
+  m.addEventListener('pointerdown',e=>{if(e.target===m)close()});
+  m.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key==='Enter'&&e.target.tagName==='INPUT'){const p=$('.btn.pri',m);p&&p.click()}});
+  document.body.append(m);const f=$('input[type=text],textarea',m);f&&f.focus();return m;
+}
+const confirmBox=(title,msg,label,fn)=>modal(title,`<p>${esc(msg)}</p>`,[{label:'Cancel'},{label,cls:'danger',act:fn}]);
+
+/* ================= screens ================= */
+const screens={};let cur=null;
+function show(name){if(cur&&screens[cur]&&screens[cur].leave)screens[cur].leave();$$('.screen').forEach(s=>s.hidden=s.id!=='scr-'+name);cur=name;screens[name]&&screens[name].enter&&screens[name].enter()}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)show(g.dataset.go)});
+
+/* ================= floating windows ================= */
+let zTop=10;
+function makeWin(container,key,title,def,body){
+  const pos=LS.get('win:'+key,null)||{x:def.x(),y:def.y()};
+  const w=h(`<div class="win" style="left:${pos.x}px;top:${pos.y}px;width:${def.w}px"><div class="wh"><span class="grip"></span><b>${esc(title)}</b><button class="wmin" title="Collapse / expand">–</button></div><div class="wb" style="max-height:${def.maxh}"></div></div>`);
+  $('.wb',w).append(body);container.append(w);if(pos.min)w.classList.add('min');
+  const hd=$('.wh',w);const persist=()=>LS.set('win:'+key,{x:w.offsetLeft,y:w.offsetTop,min:w.classList.contains('min')});
+  hd.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;w.style.zIndex=++zTop;const sx=e.clientX,sy=e.clientY,ox=w.offsetLeft,oy=w.offsetTop;hd.setPointerCapture(e.pointerId);
+    const mv=ev=>{w.style.left=clamp(ox+ev.clientX-sx,80-w.offsetWidth,innerWidth-80)+'px';w.style.top=clamp(oy+ev.clientY-sy,0,innerHeight-40)+'px'};
+    const up=()=>{hd.removeEventListener('pointermove',mv);hd.removeEventListener('pointerup',up);persist()};
+    hd.addEventListener('pointermove',mv);hd.addEventListener('pointerup',up)});
+  w.addEventListener('pointerdown',()=>w.style.zIndex=++zTop);
+  $('.wmin',w).onclick=()=>{w.classList.toggle('min');persist()};
+  w._reset=()=>{LS.del('win:'+key);w.style.left=def.x()+'px';w.style.top=def.y()+'px';w.classList.remove('min')};
+  return w;
+}
+
+/* ================= form helpers ================= */
+const F={
+  num:(k,l,v,step=1)=>`<label class="m"><span>${l}</span><input type="number" data-k="${k}" value="${typeof v==='number'?+v.toFixed(2):v}" step="${step}"></label>`,
+  text:(k,l,v)=>`<label class="f"><span>${l}</span><input type="text" data-k="${k}" value="${esc(v)}"></label>`,
+  color:(k,l,v,all)=>`<label class="f"><span>${l}</span><input type="color" ${all?'data-allk':'data-k'}="${k}" value="${v}"></label>`,
+  range:(k,l,v,min,max,step)=>`<label class="f"><span>${l}</span><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${v}"></label>`,
+  sel:(k,l,v,opts,all)=>`<label class="f"><span>${l}</span><select ${all?'data-allk':'data-k'}="${k}">${opts.map(([a,b])=>`<option value="${esc(a)}"${a==v?' selected':''}>${esc(b)}</option>`).join('')}</select></label>`,
+  chk:(k,l,v)=>`<label class="f chk"><span>${l}</span><input type="checkbox" data-k="${k}"${v?' checked':''}></label>`,
+  numf:(k,l,v,all)=>`<label class="f"><span>${l}</span><input type="number" ${all?'data-allk':'data-k'}="${k}" value="${v}"></label>`
+};
+function bindForm(root,getTarget,after,push){
+  const isCtl=t=>t.matches&&t.matches('[data-k],[data-allk]');
+  root.addEventListener('focusin',e=>{if(isCtl(e.target))push()});
+  root.addEventListener('pointerdown',e=>{if(isCtl(e.target))push()});
+  root.addEventListener('input',e=>{const t=e.target,k=t.dataset.k,ak=t.dataset.allk;if(!k&&!ak)return;
+    let v=t.type==='checkbox'?t.checked:(t.type==='number'||t.type==='range')?parseFloat(t.value):t.value;
+    if(typeof v==='number'&&isNaN(v))return;const o=getTarget(t);if(!o)return;
+    if(k)setPath(o,k,v);else(o.boxes||[]).forEach(b=>b[ak]=v);after(t,k||ak)});
+}
+
+/* ================= ornaments ================= */
+const ORN={
+  corner:c=>`<svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M4 98V32Q4 4 32 4H98" fill="none" stroke="${c}" stroke-width="5" vector-effect="non-scaling-stroke"/><path d="M15 98V38Q15 15 38 15H98" fill="none" stroke="${c}" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="26" cy="26" r="6" fill="${c}"/></svg>`,
+  divider:c=>`<svg viewBox="0 0 200 20" preserveAspectRatio="none"><path d="M0 10H82M118 10H200" stroke="${c}" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M100 1L111 10L100 19L89 10Z" fill="${c}"/><circle cx="80" cy="10" r="3" fill="${c}"/><circle cx="120" cy="10" r="3" fill="${c}"/></svg>`,
+  frame:c=>`<svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="2" y="2" width="96" height="96" fill="none" stroke="${c}" stroke-width="4" vector-effect="non-scaling-stroke"/><rect x="5" y="5" width="90" height="90" fill="none" stroke="${c}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`,
+  banner:c=>`<svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 14H26V54H0L12 34Z M200 14H174V54H200L188 34Z" fill="${c}" opacity=".65"/><rect x="18" y="4" width="164" height="42" fill="${c}"/></svg>`,
+  star:c=>`<svg viewBox="0 0 100 100"><path d="M50 4L61 38H96L68 59L79 94L50 72L21 94L32 59L4 38H39Z" fill="${c}"/></svg>`,
+  shield:c=>`<svg viewBox="0 0 100 100"><path d="M50 4L90 16V46C90 72 72 88 50 96C28 88 10 72 10 46V16Z" fill="none" stroke="${c}" stroke-width="5"/><path d="M50 18L78 26V46C78 64 66 76 50 82Z" fill="${c}" opacity=".5"/></svg>`,
+  sword:c=>`<svg viewBox="0 0 100 100"><path d="M50 4L56 16V66H44V16Z" fill="${c}"/><rect x="30" y="66" width="40" height="6" rx="3" fill="${c}"/><rect x="46" y="72" width="8" height="16" fill="${c}"/><circle cx="50" cy="92" r="5" fill="${c}"/></svg>`,
+  rune:c=>`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="${c}" stroke-width="3"/><circle cx="50" cy="50" r="36" fill="none" stroke="${c}" stroke-width="1.5"/><path d="M50 18L76 66H24Z M50 82L24 34H76Z" fill="none" stroke="${c}" stroke-width="2"/></svg>`
+};
+const ORN_NAMES={corner:'Corner',divider:'Divider',frame:'Frame',banner:'Banner',star:'Star',shield:'Shield',sword:'Sword',rune:'Rune circle'};
+
+/* ================= model ================= */
+function newWorld(name,desc){return{id:uid(),name,desc,created:Date.now(),templates:[],maps:[],assets:{}}}
+function newBox(label,fs){return{id:uid(),type:'box',label,text:'',showLabel:true,x:0,y:0,w:100,h:40,color:'#2a1d10',labelColor:'#7a5a32',bg:'#ffffff',bgOpacity:.55,borderW:1,borderColor:'#8a6a3e',radius:8,font:'Spectral',size:fs,align:'left',bold:false,italic:false}}
+function newGroup(name,x,y,w,hh,labels,arr,fs){const g={id:uid(),type:'group',name,x:R(x),y:R(y),w:R(w),h:R(hh),rot:0,opacity:1,bg:'#ffffff',bgOpacity:.18,borderW:2,borderColor:'#5a3d1e',radius:14,showTitle:true,titleColor:'#5a3d1e',titleFont:'Cinzel',titleSize:R(fs*.85),boxes:labels.map(l=>newBox(l,fs))};arrange(g,arr);return g}
+function arrange(g,mode){const n=g.boxes.length;if(!n)return;const pad=12,gap=8,top=g.showTitle?R(g.titleSize*1.25+14):pad;
+  const cols=mode==='h'?n:mode==='v'?1:Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols);
+  const bw=(g.w-2*pad-gap*(cols-1))/cols,bh=(g.h-top-pad-gap*(rows-1))/rows;
+  g.boxes.forEach((b,i)=>{const c=i%cols,r=Math.floor(i/cols);b.x=R(pad+c*(bw+gap));b.y=R(top+r*(bh+gap));b.w=R(Math.max(20,bw));b.h=R(Math.max(20,bh))})}
+function newTemplate(name,w,hh,starter){const s=Math.min(w,hh);
+  const t={id:uid(),name,w,h:hh,bg:{color:'#f1e6cc',color2:'#d9c399',grad:true,angle:180,img:null,fit:'cover',imgOpacity:1},
+    border:{w:R(s*.012),color:'#5a3d1e',r:R(s*.03)},
+    layout:{preset:'none',cols:2,rows:3,margin:R(s*.05),gap:R(s*.03),color:'#ffffff',opacity:.3,radius:16,stroke:'#5a3d1e',strokeW:0},items:[]};
+  if(starter)starterItems(t);return t}
+function starterItems(t){const m=t.layout.margin,gap=t.layout.gap,W=t.w-2*m,fs=R(clamp(Math.min(t.w,t.h)*.028,14,40));
+  let y=m;const g1=newGroup('Identity',m,y,W,t.h*.14,['Name','Class','Level'],'h',fs);y+=g1.h+gap;
+  const half=(W-gap)/2,gh=t.h*.42;
+  const g2=newGroup('Abilities',m,y,half,gh,['STR','DEX','CON','INT','WIS','CHA'],'g',fs);
+  const g3=newGroup('Vitals',m+half+gap,y,half,gh,['Hit points','Armor class','Speed','Initiative'],'v',fs);y+=g2.h+gap;
+  const g4=newGroup('Notes',m,y,W,Math.max(80,t.h-m-y),['Background','Inventory'],'h',fs);
+  const cs=R(Math.min(t.w,t.h)*.14);
+  t.items.push(g1,g2,g3,g4,
+    {id:uid(),type:'orn',orn:'corner',color:'#8a6a3e',x:R(m*.35),y:R(m*.35),w:cs,h:cs,rot:0,opacity:.8},
+    {id:uid(),type:'orn',orn:'corner',color:'#8a6a3e',x:R(t.w-m*.35-cs),y:R(t.h-m*.35-cs),w:cs,h:cs,rot:180,opacity:.8});
+}
+function layoutRects(t){const L=t.layout,m=L.margin,g=L.gap,W=t.w-2*m,H=t.h-2*m;
+  switch(L.preset){
+    case 'frame':return[{x:m,y:m,w:W,h:H}];
+    case 'header':{const hh=R(H*.18);return[{x:m,y:m,w:W,h:hh},{x:m,y:m+hh+g,w:W,h:H-hh-g}]}
+    case 'twocol':{const hh=R(H*.14),cw=(W-g)/2;return[{x:m,y:m,w:W,h:hh},{x:m,y:m+hh+g,w:cw,h:H-hh-g},{x:m+cw+g,y:m+hh+g,w:cw,h:H-hh-g}]}
+    case 'portrait':{const pw=R(W*.45),ph=R(H*.4);return[{x:m,y:m,w:pw,h:ph},{x:m+pw+g,y:m,w:W-pw-g,h:ph},{x:m,y:m+ph+g,w:W,h:H-ph-g}]}
+    case 'grid':{const c=Math.max(1,L.cols|0),r=Math.max(1,L.rows|0),cw=(W-g*(c-1))/c,rh=(H-g*(r-1))/r,o=[];for(let j=0;j<r;j++)for(let i=0;i<c;i++)o.push({x:m+i*(cw+g),y:m+j*(rh+g),w:cw,h:rh});return o}
+    default:return[]}
+}
+function fitCSS(f){return{cover:'background-size:cover;background-position:center;background-repeat:no-repeat',contain:'background-size:contain;background-position:center;background-repeat:no-repeat',stretch:'background-size:100% 100%',tile:'background-size:auto;background-repeat:repeat'}[f]||''}
+function boxHTML(b){return `<div data-id="${b.id}" class="it it-box" style="left:${b.x}px;top:${b.y}px;width:${b.w}px;height:${b.h}px;background:${hexA(b.bg,b.bgOpacity)};border:${b.borderW}px solid ${b.borderColor};border-radius:${b.radius}px;color:${b.color};font-family:${fontCSS(b.font)};font-size:${b.size}px;text-align:${b.align};font-weight:${b.bold?700:400};font-style:${b.italic?'italic':'normal'}">${b.showLabel?`<div class="blabel" style="color:${b.labelColor};font-size:${Math.max(10,R(b.size*.55))}px">${esc(b.label)}</div>`:''}<div class="btext">${esc(b.text)}</div></div>`}
+function itemHTML(world,it){
+  const base=`data-id="${it.id}" class="it it-${it.type}" style="left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;transform:rotate(${it.rot||0}deg);opacity:${it.opacity??1};`;
+  if(it.type==='image')return `<div ${base}"><img src="${world.assets[it.asset]||''}" draggable="false" alt="" style="transform:scale(${it.flipX?-1:1},${it.flipY?-1:1})"></div>`;
+  if(it.type==='orn')return `<div ${base}">${(ORN[it.orn]||ORN.star)(it.color)}</div>`;
+  if(it.type==='shape')return `<div ${base}background:${hexA(it.fill,it.fillOpacity??1)};border:${it.strokeW}px solid ${it.stroke};border-radius:${it.shape==='ellipse'?'50%':it.radius+'px'}"></div>`;
+  if(it.type==='group')return `<div ${base}background:${hexA(it.bg,it.bgOpacity)};border:${it.borderW}px solid ${it.borderColor};border-radius:${it.radius}px">${it.showTitle?`<div class="gtitle" style="color:${it.titleColor};font-family:${fontCSS(it.titleFont)};font-size:${it.titleSize}px">${esc(it.name)}</div>`:''}${it.boxes.map(boxHTML).join('')}</div>`;
+  return '';
+}
+function cardHTML(world,t){const b=t.bg,L=t.layout;
+  let s=`<div class="card" style="width:${t.w}px;height:${t.h}px;border-radius:${t.border.r}px;background:${b.grad?`linear-gradient(${b.angle}deg,${b.color},${b.color2})`:b.color}">`;
+  if(b.img&&world.assets[b.img])s+=`<div class="cbg" style="background-image:url(${world.assets[b.img]});${fitCSS(b.fit)};opacity:${b.imgOpacity}"></div>`;
+  layoutRects(t).forEach(r=>s+=`<div class="lpanel" style="left:${R(r.x)}px;top:${R(r.y)}px;width:${R(r.w)}px;height:${R(r.h)}px;background:${hexA(L.color,L.opacity)};border-radius:${L.radius}px;border:${L.strokeW}px solid ${L.stroke}"></div>`);
+  if(t.border.w>0)s+=`<div class="cborder" style="border:${t.border.w}px solid ${t.border.color};border-radius:${t.border.r}px"></div>`;
+  t.items.forEach(it=>s+=itemHTML(world,it));return s+'</div>'}
+function cloneItem(it){const c=JSON.parse(JSON.stringify(it));c.id=uid();if(c.boxes)c.boxes.forEach(b=>b.id=uid());return c}
+function pruneAssets(w){const used=new Set();w.templates.forEach(t=>{t.bg.img&&used.add(t.bg.img);t.items.forEach(i=>i.asset&&used.add(i.asset))});w.maps.forEach(m=>m.layers.forEach(l=>l.asset&&used.add(l.asset)));Object.keys(w.assets).forEach(k=>{if(!used.has(k))delete w.assets[k]})}
+
+/* ================= WORLDS ================= */
+let W=null; // current world
+screens.worlds={enter(){renderWorlds()}};
+function renderWorlds(){const L=$('#world-list');
+  L.innerHTML=DB.worlds.length?DB.worlds.map(w=>{const mt=w.maps.find(m=>m.thumb);return `<article class="tile" data-id="${w.id}">
+    <div class="thumb" data-act="open">${mt?`<img src="${mt.thumb}" alt="">`:`<svg viewBox="0 0 120 80" width="140" aria-hidden="true"><path d="M10 60 L35 30 L50 45 L70 18 L110 60Z" fill="none" stroke="var(--acc)" stroke-width="2"/><circle cx="92" cy="20" r="7" fill="none" stroke="var(--acc)" stroke-width="2"/></svg>`}</div>
+    <div class="tbody"><div>${pubBadge(w)}</div><h3>${esc(w.name)}</h3><p>${esc(w.desc||'No description yet')}</p><p>${w.templates.length} card template${w.templates.length==1?'':'s'} · ${w.maps.length} map${w.maps.length==1?'':'s'}</p></div>
+    <div class="tacts"><button class="btn pri sm" data-act="open">Open</button><button class="btn sm" data-act="export">Export</button><button class="btn sm ghost" data-act="del">Delete</button></div></article>`}).join('')
+  :`<div class="empty"><h3 style="margin-bottom:8px">No worlds yet</h3>Create a world to start building card templates and maps, or import a world file you exported earlier.</div>`}
+$('#world-list').addEventListener('click',e=>{const a=e.target.closest('[data-act]'),t=e.target.closest('.tile');if(!a||!t)return;const w=DB.worlds.find(x=>x.id===t.dataset.id);
+  if(a.dataset.act==='open'){W=w;show('world')}
+  if(a.dataset.act==='export')exportWorld(w);
+  if(a.dataset.act==='del')confirmBox('Delete world?',`“${w.name}” and everything in it will be removed from this browser. Export it first if you want a copy.`,'Delete',()=>{DB.worlds=DB.worlds.filter(x=>x!==w);save();renderWorlds()})});
+$('#w-new').onclick=()=>modal('Create world',`<label class="lbl">World name</label><input type="text" id="nw-name" value="The Shattered Coast"><label class="lbl">Short description</label><textarea id="nw-desc" rows="3" placeholder="Optional"></textarea>`,[{label:'Cancel'},{label:'Create world',cls:'pri',act:m=>{const n=$('#nw-name',m).value.trim();if(!n)return false;const w=newWorld(n,$('#nw-desc',m).value.trim());DB.worlds.unshift(w);save();W=w;show('world')}}]);
+$('#w-import').onclick=()=>pickFiles('.json,application/json',false,fs=>{const f=fs[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const w=JSON.parse(r.result);if(!w||!w.name||!Array.isArray(w.templates)||!Array.isArray(w.maps))throw 0;w.assets=w.assets||{};if(DB.worlds.some(x=>x.id===w.id))w.id=uid();DB.worlds.unshift(w);save();renderWorlds();toast(`Imported “${w.name}”`)}catch(e){toast('That file is not a Worldforge world')}};r.readAsText(f)});
+function exportWorld(w){flush();pruneAssets(w);const json=JSON.stringify(w);const kb=Math.round(json.length/1024);
+  modal('Export world',`<p>“${esc(w.name)}” is about ${kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB'}, including images and maps.</p><p class="muted">Download saves a .json file you can import later or on another computer. If the download is blocked, use Copy and paste the text into a file named <b>${esc(w.name)}.json</b>.</p>`,
+  [{label:'Close'},{label:'Copy to clipboard',act:()=>{navigator.clipboard.writeText(json).then(()=>toast('World copied'),()=>toast('Copy was blocked by the browser'));return false}},
+   {label:'Download .json',cls:'pri',act:()=>{downloadText(w.name.replace(/[^\w\- ]+/g,'')+'.json',json);return false}}])}
+function downloadText(fn,text){const dl=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
+  dl.then(d=>{if(d)return d.save({filename:fn,data:text}).then(()=>toast('Saved '+fn),()=>toast('Download cancelled'));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=fn;document.body.append(a);a.click();a.remove()}).catch(()=>toast('Download blocked: use Copy instead'))}
+
+/* ================= WORLD ================= */
+screens.world={enter(){$('#wd-name').value=W.name;$('#wd-desc').value=W.desc||'';renderWorld();$('#wd-pub').innerHTML=pubBadge(W)}};
+$('#wd-preview').onclick=()=>{flush();previewWorld(W)};
+$('#wd-publish').onclick=()=>publishDialog(W);
+$('#wd-name').oninput=e=>{W.name=e.target.value;save()};
+$('#wd-desc').oninput=e=>{W.desc=e.target.value;save()};
+$('#wd-export').onclick=()=>exportWorld(W);
+function cardThumb(t,box=184,world=W){const s=Math.min(box/t.w,box/t.h);return `<div class="tscale" style="width:${t.w}px;height:${t.h}px;transform:scale(${s});left:calc(50% - ${t.w*s/2}px);top:calc(50% - ${t.h*s/2}px)">${cardHTML(world,t)}</div>`}
+function renderWorld(){
+  $('#wd-cards').innerHTML=W.templates.length?W.templates.map(t=>`<article class="tile" data-id="${t.id}"><div class="thumb" data-act="open">${cardThumb(t)}</div><div class="tbody"><h3>${esc(t.name)}</h3><p>${t.w} × ${t.h}px · ${t.items.filter(i=>i.type==='group').length} text groups</p></div><div class="tacts"><button class="btn sm pri" data-act="open">Edit</button><button class="btn sm" data-act="dup">Duplicate</button><button class="btn sm ghost" data-act="del">Delete</button></div></article>`).join('')
+    :`<div class="empty">No player card templates yet. A template is the blank sheet your players will fill in: character sheets, item cards, spell cards.</div>`;
+  $('#wd-maps').innerHTML=W.maps.length?W.maps.map(m=>`<article class="tile" data-id="${m.id}"><div class="thumb" data-act="open" style="background:${m.bg}">${m.thumb?`<img src="${m.thumb}" alt="">`:''}</div><div class="tbody"><h3>${esc(m.name)}</h3><p>${m.w} × ${m.h}px · ${m.layers.length} layers</p></div><div class="tacts"><button class="btn sm pri" data-act="open">Edit</button><button class="btn sm" data-act="dup">Duplicate</button><button class="btn sm ghost" data-act="del">Delete</button></div></article>`).join('')
+    :`<div class="empty">No maps yet. Paint regions, dungeons or battle maps and drop in PNG tokens and landmarks.</div>`}
+function tileActs(listSel,arrKey,open){$(listSel).addEventListener('click',e=>{const a=e.target.closest('[data-act]'),t=e.target.closest('.tile');if(!a||!t)return;const arr=W[arrKey],o=arr.find(x=>x.id===t.dataset.id);
+  if(a.dataset.act==='open')open(o);
+  if(a.dataset.act==='dup'){flush();const c=JSON.parse(JSON.stringify(o));c.id=uid();c.name+=' copy';if(c.layers)c.layers.forEach(l=>l.id=uid());if(c.items)c.items.forEach(i=>{i.id=uid();if(i.boxes)i.boxes.forEach(b=>b.id=uid())});arr.splice(arr.indexOf(o)+1,0,c);save();renderWorld()}
+  if(a.dataset.act==='del')confirmBox('Delete?',`Delete “${o.name}”? This can't be undone.`,'Delete',()=>{W[arrKey]=arr.filter(x=>x!==o);save();renderWorld()})})}
+tileActs('#wd-cards','templates',t=>openCard(t));
+tileActs('#wd-maps','maps',m=>openMap(m));
+
+function sizePicker(presets,defIdx){const max=Math.max(...presets.map(p=>Math.max(p[1],p[2])));
+  return `<div class="sizes">${presets.map((p,i)=>`<div class="size${i===defIdx?' on':''}" data-w="${p[1]}" data-h="${p[2]}" data-i="${i}" tabindex="0"><i style="width:${R(p[1]/max*70)}px;height:${R(p[2]/max*70)}px"></i><b>${esc(p[0])}</b><small>${p[1]} × ${p[2]}</small></div>`).join('')}</div>
+  <div class="r2"><label class="m"><span>Width (px)</span><input type="number" id="sz-w" value="${presets[defIdx][1]}" min="100" max="6000"></label><label class="m"><span>Height (px)</span><input type="number" id="sz-h" value="${presets[defIdx][2]}" min="100" max="6000"></label></div>`}
+function wireSizes(m,onPick){$$('.size',m).forEach(s=>{const pick=()=>{$$('.size',m).forEach(x=>x.classList.toggle('on',x===s));$('#sz-w',m).value=s.dataset.w;$('#sz-h',m).value=s.dataset.h;onPick&&onPick(+s.dataset.i)};s.onclick=pick;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick()}}});
+  ['#sz-w','#sz-h'].forEach(id=>$(id,m).oninput=()=>$$('.size',m).forEach(x=>x.classList.remove('on')))}
+const CARD_SIZES=[['Playing card',750,1050],['Tarot card',825,1425],['Character sheet (A4)',1240,1754],['Half sheet (A5)',874,1240],['Landscape sheet',1754,1240],['Square token',1000,1000]];
+const MAP_SIZES=[['Region map',2400,1600,false],['Battle map, 20×20',1400,1400,true],['Dungeon',2000,2000,true],['World map',3200,2000,false]];
+$('#wd-newcard').onclick=()=>{const m=modal('New player card template',`<label class="lbl">Template name</label><input type="text" id="nt-name" value="Character sheet"><label class="lbl">Card size (choose this first; you can still change it later)</label>${sizePicker(CARD_SIZES,2)}<label class="lbl">Start with</label><select id="nt-start"><option value="1">Starter sheet: identity, abilities, vitals, notes</option><option value="0">Blank card</option></select>`,
+  [{label:'Cancel'},{label:'Create template',cls:'pri',act:m=>{const w=clamp(+$('#sz-w',m).value||750,100,6000),hh=clamp(+$('#sz-h',m).value||1050,100,6000);const t=newTemplate($('#nt-name',m).value.trim()||'Card',w,hh,$('#nt-start',m).value==='1');W.templates.push(t);save();openCard(t)}}]);wireSizes(m)};
+$('#wd-newmap').onclick=()=>{const m=modal('New map',`<label class="lbl">Map name</label><input type="text" id="nm-name" value="Region map"><label class="lbl">Canvas size</label>${sizePicker(MAP_SIZES,0)}<div class="r2" style="margin-top:10px"><label class="f"><span>Paper colour</span><input type="color" id="nm-bg" value="#e9dcbc"></label><label class="f chk"><span>Square grid</span><input type="checkbox" id="nm-grid"></label></div>`,
+  [{label:'Cancel'},{label:'Create map',cls:'pri',act:m=>{const w=clamp(+$('#sz-w',m).value||2000,200,6000),hh=clamp(+$('#sz-h',m).value||1400,200,6000);
+    const mp={id:uid(),name:$('#nm-name',m).value.trim()||'Map',w,h:hh,bg:$('#nm-bg',m).value,grid:{on:$('#nm-grid',m).checked,size:70,color:'#000000',opacity:.25},layers:[{id:uid(),type:'paint',name:'Terrain',visible:true,opacity:1,data:null},{id:uid(),type:'paint',name:'Ink',visible:true,opacity:1,data:null}],thumb:null};
+    W.maps.push(mp);save();openMap(mp)}}]);
+  wireSizes(m,i=>{$('#nm-grid',m).checked=MAP_SIZES[i][3];$('#nm-name',m).value=MAP_SIZES[i][0].replace(/,.*/,'')})};
+
+/* ================= CARD EDITOR ================= */
+const CE={tpl:null,sel:null,zoom:1,pan:{x:0,y:0},hist:[],fut:[],snap:true,preview:false};
+const cStage=$('#c-stage'),cWorld=$('#c-world');
+const cTools=h('<div></div>'),cProps=h('<div></div>'),cText=h('<div></div>');
+const cWins=[
+  makeWin($('#c-wins'),'c-tools','Card tools',{x:()=>12,y:()=>64,w:280,maxh:'calc(52vh - 40px)'},cTools),
+  makeWin($('#c-wins'),'c-props','Properties',{x:()=>12,y:()=>R(innerHeight*.52)+76,w:280,maxh:'calc(48vh - 130px)'},cProps),
+  makeWin($('#c-wins'),'c-text','Text',{x:()=>Math.max(300,innerWidth-332),y:()=>64,w:320,maxh:'calc(100vh - 130px)'},cText)];
+$('#c-resetw').onclick=()=>cWins.forEach(w=>w._reset());
+function openCard(t){CE.tpl=t;CE.sel=null;CE.hist=[];CE.fut=[];show('card')}
+screens.card={enter(){$('#c-name').value=CE.tpl.name;renderTools();renderCard();renderProps();renderText();requestAnimationFrame(fitCard)},leave(){flush()}};
+$('#c-back').onclick=()=>show('world');
+$('#c-name').oninput=e=>{CE.tpl.name=e.target.value;save()};
+function findItem(id){for(const it of CE.tpl.items){if(it.id===id)return{item:it,parent:null};if(it.boxes){const b=it.boxes.find(x=>x.id===id);if(b)return{item:b,parent:it}}}return null}
+function pushHist(){const s=JSON.stringify(CE.tpl);if(CE.hist[CE.hist.length-1]===s)return;CE.hist.push(s);if(CE.hist.length>80)CE.hist.shift();CE.fut=[];updUndo()}
+function replaceTpl(s){const t=CE.tpl,o=JSON.parse(s);Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,o);if(CE.sel&&!findItem(CE.sel))CE.sel=null;renderAllCard();save()}
+function undo(){const cur=JSON.stringify(CE.tpl);while(CE.hist.length&&CE.hist[CE.hist.length-1]===cur)CE.hist.pop();if(!CE.hist.length)return;CE.fut.push(cur);replaceTpl(CE.hist.pop())}
+function redo(){if(!CE.fut.length)return;CE.hist.push(JSON.stringify(CE.tpl));replaceTpl(CE.fut.pop())}
+function updUndo(){$('#c-undo').disabled=!CE.hist.length;$('#c-redo').disabled=!CE.fut.length}
+$('#c-undo').onclick=undo;$('#c-redo').onclick=redo;
+function renderAllCard(){$('#c-name').value=CE.tpl.name;renderTools();renderCard();renderProps();renderText()}
+function renderCard(){cWorld.innerHTML=cardHTML(W,CE.tpl);
+  if(CE.sel){const el=cWorld.querySelector(`[data-id="${CE.sel}"]`);if(el){el.classList.add('sel');el.insertAdjacentHTML('beforeend','<div class="hdl"></div>')}}
+  $('#c-dims').textContent=`${CE.tpl.w} × ${CE.tpl.h}px`;updUndo()}
+function applyCView(){cWorld.style.transform=`translate(${CE.pan.x}px,${CE.pan.y}px) scale(${CE.zoom})`;cStage.style.setProperty('--iz',1/CE.zoom);$('#c-zl').textContent=R(CE.zoom*100)+'%'}
+function fitCard(){const r=cStage.getBoundingClientRect();CE.zoom=clamp(Math.min((r.width-80)/CE.tpl.w,(r.height-80)/CE.tpl.h),.05,4);CE.pan={x:(r.width-CE.tpl.w*CE.zoom)/2,y:(r.height-CE.tpl.h*CE.zoom)/2};applyCView()}
+function zoomAt(view,stage,apply,cx,cy,f){const r=stage.getBoundingClientRect(),px=cx-r.left,py=cy-r.top,nz=clamp(view.zoom*f,.05,8);view.pan.x=px-(px-view.pan.x)*(nz/view.zoom);view.pan.y=py-(py-view.pan.y)*(nz/view.zoom);view.zoom=nz;apply()}
+const zoomCenter=(view,stage,apply,f)=>{const r=stage.getBoundingClientRect();zoomAt(view,stage,apply,r.left+r.width/2,r.top+r.height/2,f)};
+$('#c-zin').onclick=()=>zoomCenter(CE,cStage,applyCView,1.25);$('#c-zout').onclick=()=>zoomCenter(CE,cStage,applyCView,.8);$('#c-fit').onclick=fitCard;
+$('#c-prev').onclick=()=>{CE.preview=!CE.preview;$('#scr-card').classList.toggle('preview',CE.preview);$('#c-prev').classList.toggle('on',CE.preview)};
+cStage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(CE,cStage,applyCView,e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))},{passive:false});
+const toCard=e=>{const r=cStage.getBoundingClientRect();return{x:(e.clientX-r.left-CE.pan.x)/CE.zoom,y:(e.clientY-r.top-CE.pan.y)/CE.zoom}};
+function viewCenterCard(){const r=cStage.getBoundingClientRect();return{x:clamp((r.width/2-CE.pan.x)/CE.zoom,0,CE.tpl.w),y:clamp((r.height/2-CE.pan.y)/CE.zoom,0,CE.tpl.h)}}
+let spaceDown=false;
+function startPan(e,view,stage,apply){stage.classList.add('panning');const sx=e.clientX,sy=e.clientY,ox=view.pan.x,oy=view.pan.y;stage.setPointerCapture(e.pointerId);
+  const mv=ev=>{view.pan.x=ox+ev.clientX-sx;view.pan.y=oy+ev.clientY-sy;apply()};const up=()=>{stage.classList.remove('panning');stage.removeEventListener('pointermove',mv);stage.removeEventListener('pointerup',up)};
+  stage.addEventListener('pointermove',mv);stage.addEventListener('pointerup',up)}
+function selectC(id,o={}){CE.sel=id;renderCard();renderProps();if(o.text!==false)markText()}
+cStage.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.hint'))return;
+  if(e.button===1||spaceDown){e.preventDefault();startPan(e,CE,cStage,applyCView);return}
+  if(e.button!==0)return;
+  if(CE.preview){startPan(e,CE,cStage,applyCView);return}
+  const hd=e.target.closest('.hdl'),el=e.target.closest('.it');
+  if(!el){if(!e.target.closest('.card'))startPan(e,CE,cStage,applyCView);if(CE.sel)selectC(null);return}
+  const id=el.dataset.id,f=findItem(id);if(!f)return;const it=f.item;
+  if(CE.sel!==id)selectC(id);
+  pushHist();const s=toCard(e),st={x:it.x,y:it.y,w:it.w,h:it.h},mode=hd?'resize':'move',ratio=it.w/it.h;
+  cStage.setPointerCapture(e.pointerId);
+  const mv=ev=>{const p=toCard(ev);let dx=p.x-s.x,dy=p.y-s.y;const sn=v=>CE.snap&&!ev.altKey?R(v/5)*5:R(v);
+    const node=cWorld.querySelector(`[data-id="${id}"]`);
+    if(mode==='move'){if(ev.shiftKey){Math.abs(dx)>Math.abs(dy)?dy=0:dx=0}it.x=sn(st.x+dx);it.y=sn(st.y+dy);node.style.left=it.x+'px';node.style.top=it.y+'px'}
+    else{it.w=Math.max(10,sn(st.w+dx));it.h=Math.max(10,sn(st.h+dy));if((it.type==='image')!==ev.shiftKey){it.h=Math.max(10,R(it.w/ratio))}node.style.width=it.w+'px';node.style.height=it.h+'px'}};
+  const up=()=>{cStage.removeEventListener('pointermove',mv);cStage.removeEventListener('pointerup',up);if(st.x!==it.x||st.y!==it.y||st.w!==it.w||st.h!==it.h){save();renderProps()}};
+  cStage.addEventListener('pointermove',mv);cStage.addEventListener('pointerup',up)});
+cStage.addEventListener('dblclick',e=>{const el=e.target.closest('.it-box');if(!el)return;const ta=$(`textarea[data-id="${el.dataset.id}"]`,cText);if(ta){const w=ta.closest('.win');w.classList.remove('min');ta.scrollIntoView({block:'center'});ta.focus()}});
+cStage.addEventListener('dragover',e=>e.preventDefault());
+cStage.addEventListener('drop',e=>{e.preventDefault();const p=toCard(e);addImages([...e.dataTransfer.files],p)});
+function addItem(it){pushHist();CE.tpl.items.push(it);CE.sel=it.id;save();renderCard();renderProps();renderText()}
+function addImages(files,at){readImages(files,(src,nw,nh,name)=>{const c=at||viewCenterCard(),s=Math.min(1,CE.tpl.w*.5/nw,CE.tpl.h*.5/nh),w=R(nw*s),hh=R(nh*s);
+  addItem({id:uid(),type:'image',name,asset:(()=>{const id='a'+uid();W.assets[id]=src;return id})(),x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1,flipX:false,flipY:false})})}
+
+/* --- card tools window --- */
+let ornColor='#8a6a3e';
+function renderTools(){const t=CE.tpl,L=t.layout,b=t.bg;
+  cTools.innerHTML=`
+  <div class="sec"><h4>Card</h4>
+    <div class="r2">${F.num('w','Width',t.w)}${F.num('h','Height',t.h)}</div>
+    <div class="r2" style="margin-top:6px">${F.num('border.w','Border',t.border.w)}${F.num('border.r','Corner radius',t.border.r)}</div>
+    ${F.color('border.color','Border colour',t.border.color)}
+    <label class="f chk"><span>Snap to 5px</span><input type="checkbox" id="c-snap"${CE.snap?' checked':''}></label></div>
+  <div class="sec"><h4>Background</h4>
+    ${F.color('bg.color','Colour',b.color)}${F.chk('bg.grad','Gradient',b.grad)}
+    ${b.grad?F.color('bg.color2','Second colour',b.color2)+F.range('bg.angle','Angle',b.angle,0,360,5):''}
+    <div class="btns"><button class="btn sm" data-act="bgimg">${b.img?'Replace image':'Add background image'}</button>${b.img?'<button class="btn sm ghost" data-act="bgclear">Remove</button>':''}</div>
+    ${b.img?F.sel('bg.fit','Fit',b.fit,[['cover','Cover'],['contain','Contain'],['stretch','Stretch'],['tile','Tile']])+F.range('bg.imgOpacity','Image opacity',b.imgOpacity,0,1,.05):''}</div>
+  <div class="sec"><h4>Layout</h4>
+    ${F.sel('layout.preset','Preset',L.preset,[['none','None'],['frame','Inner frame'],['header','Header and body'],['twocol','Header and two columns'],['portrait','Portrait, stats, notes'],['grid','Grid']])}
+    ${L.preset==='grid'?`<div class="r2">${F.num('layout.cols','Columns',L.cols)}${F.num('layout.rows','Rows',L.rows)}</div>`:''}
+    ${L.preset!=='none'?`<div class="r2" style="margin-top:6px">${F.num('layout.margin','Margin',L.margin)}${F.num('layout.gap','Gap',L.gap)}</div>${F.color('layout.color','Panel colour',L.color)}${F.range('layout.opacity','Panel opacity',L.opacity,0,1,.05)}<div class="r2">${F.num('layout.radius','Radius',L.radius)}${F.num('layout.strokeW','Outline',L.strokeW)}</div>${F.color('layout.stroke','Outline colour',L.stroke)}`:''}</div>
+  <div class="sec"><h4>Text</h4><div class="btns"><button class="btn sm pri" data-act="group">Add text group</button><button class="btn sm" data-act="box">Add text box</button></div>
+    <p class="tip">A text box is added to the selected group, or in a new group if none is selected.</p></div>
+  <div class="sec"><h4>Decorations</h4>
+    <div class="btns"><button class="btn sm" data-act="png">Add PNG image</button><button class="btn sm" data-act="rect">Rectangle</button><button class="btn sm" data-act="ellipse">Ellipse</button><button class="btn sm" data-act="line">Line</button></div>
+    <label class="f"><span>Ornament colour</span><input type="color" id="c-orncol" value="${ornColor}"></label>
+    <div class="orns">${Object.keys(ORN).map(k=>`<button data-orn="${k}" title="${ORN_NAMES[k]}">${ORN[k](ornColor)}</button>`).join('')}</div></div>`;
+}
+bindForm(cTools,()=>CE.tpl,(t,k)=>{if(k==='w'||k==='h')CE.tpl[k]=clamp(CE.tpl[k],50,8000);renderCard();save();if(['layout.preset','bg.grad'].includes(k))renderTools()},pushHist);
+cTools.addEventListener('input',e=>{if(e.target.id==='c-snap')CE.snap=e.target.checked;if(e.target.id==='c-orncol'){ornColor=e.target.value;$$('.orns button',cTools).forEach(b=>b.innerHTML=ORN[b.dataset.orn](ornColor))}});
+cTools.addEventListener('click',e=>{const a=e.target.closest('[data-act],[data-orn]');if(!a)return;const t=CE.tpl,c=viewCenterCard(),s=Math.min(t.w,t.h),fs=R(clamp(s*.028,14,40));
+  if(a.dataset.orn){const k=a.dataset.orn,wide=['divider','banner'].includes(k),w=R(wide?s*.6:s*.2),hh=R(wide?(k==='divider'?s*.04:s*.14):s*.2);addItem({id:uid(),type:'orn',orn:k,color:ornColor,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1});return}
+  switch(a.dataset.act){
+    case 'bgimg':pickFiles('image/*',false,fs2=>readImages(fs2,src=>{pushHist();const id='a'+uid();W.assets[id]=src;t.bg.img=id;save();renderTools();renderCard()}));break;
+    case 'bgclear':pushHist();t.bg.img=null;save();renderTools();renderCard();break;
+    case 'group':{const w=R(t.w*.45),hh=R(t.h*.22);addItem(newGroup('New group',c.x-w/2,c.y-hh/2,w,hh,['Field 1','Field 2','Field 3'],'v',fs));break}
+    case 'box':{const f=CE.sel&&findItem(CE.sel);const g=f?(f.parent||(f.item.type==='group'?f.item:null)):null;
+      if(g){pushHist();const b=newBox('Field '+(g.boxes.length+1),g.boxes[0]?g.boxes[0].size:fs);const last=g.boxes[g.boxes.length-1];Object.assign(b,last?{x:last.x,y:Math.min(g.h-30,last.y+last.h+8),w:last.w,h:last.h}:{x:12,y:40,w:g.w-24,h:R(fs*2.6)});g.boxes.push(b);CE.sel=b.id;save();renderCard();renderProps();renderText()}
+      else{const w=R(t.w*.4),hh=R(fs*4.2);addItem(newGroup('New group',c.x-w/2,c.y-hh/2,w,hh,['Field'],'v',fs))}break}
+    case 'png':pickFiles('image/png,image/*',true,fs2=>addImages(fs2));break;
+    case 'rect':case 'ellipse':{const w=R(s*.25),hh=R(s*.18);addItem({id:uid(),type:'shape',shape:a.dataset.act,fill:'#ffffff',fillOpacity:.4,stroke:'#5a3d1e',strokeW:2,radius:10,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1});break}
+    case 'line':{const w=R(t.w*.6);addItem({id:uid(),type:'shape',shape:'rect',fill:'#5a3d1e',fillOpacity:1,stroke:'#5a3d1e',strokeW:0,radius:2,x:R(c.x-w/2),y:R(c.y),w,h:Math.max(2,R(s*.004)),rot:0,opacity:1});break}
+  }});
+
+/* --- properties window --- */
+const actBtns=`<div class="btns"><button class="btn sm" data-act="front">Bring front</button><button class="btn sm" data-act="back">Send back</button><button class="btn sm" data-act="dup">Duplicate</button><button class="btn sm ghost" data-act="del">Delete</button></div>`;
+const geo=it=>`<div class="r4">${F.num('x','X',R(it.x))}${F.num('y','Y',R(it.y))}${F.num('w','W',R(it.w))}${F.num('h','H',R(it.h))}</div>`;
+const rotOp=it=>`${F.range('rot','Rotation',it.rot||0,-180,180,1)}${F.range('opacity','Opacity',it.opacity??1,0,1,.05)}`;
+function renderProps(){const f=CE.sel&&findItem(CE.sel);
+  if(!f){cProps.innerHTML=`<p class="muted" style="margin:8px 0">Select something on the card to edit its colour, place, name and size. Double-click a text box to jump to its text.</p>`;return}
+  const it=f.item;let s='';
+  if(it.type==='box'){const p=f.parent;s=`<div class="sec"><h4>Text box in “${esc(p.name)}”</h4>${F.text('label','Name',it.label)}${F.chk('showLabel','Show name',it.showLabel)}<p class="tip" style="margin:0 0 6px">Position is relative to its group.</p>${geo(it)}</div>
+    <div class="sec"><h4>Text style</h4>${F.sel('font','Font',it.font,fontOpts)}${F.numf('size','Size',it.size)}${F.sel('align','Align',it.align,[['left','Left'],['center','Centre'],['right','Right']])}<div class="r2">${F.chk('bold','Bold',it.bold)}${F.chk('italic','Italic',it.italic)}</div>${F.color('color','Text colour',it.color)}${F.color('labelColor','Name colour',it.labelColor)}</div>
+    <div class="sec"><h4>Box</h4>${F.color('bg','Fill',it.bg)}${F.range('bgOpacity','Fill opacity',it.bgOpacity,0,1,.05)}${F.color('borderColor','Border',it.borderColor)}<div class="r2">${F.num('borderW','Border width',it.borderW)}${F.num('radius','Radius',it.radius)}</div></div>
+    <div class="btns"><button class="btn sm" data-act="selgroup">Select group</button><button class="btn sm" data-act="dup">Duplicate</button><button class="btn sm ghost" data-act="del">Delete</button></div>`}
+  else if(it.type==='group'){const b0=it.boxes[0]||newBox('',20);s=`<div class="sec"><h4>Text group</h4>${F.text('name','Name',it.name)}${geo(it)}${rotOp(it)}</div>
+    <div class="sec"><h4>Title</h4>${F.chk('showTitle','Show title',it.showTitle)}${F.sel('titleFont','Font',it.titleFont,fontOpts)}${F.numf('titleSize','Size',it.titleSize)}${F.color('titleColor','Colour',it.titleColor)}</div>
+    <div class="sec"><h4>Group box</h4>${F.color('bg','Fill',it.bg)}${F.range('bgOpacity','Fill opacity',it.bgOpacity,0,1,.05)}${F.color('borderColor','Border',it.borderColor)}<div class="r2">${F.num('borderW','Border width',it.borderW)}${F.num('radius','Radius',it.radius)}</div></div>
+    <div class="sec"><h4>All ${it.boxes.length} text boxes</h4><div class="btns"><button class="btn sm" data-act="arr-v">Stack</button><button class="btn sm" data-act="arr-h">Row</button><button class="btn sm" data-act="arr-g">Grid</button><button class="btn sm" data-act="addbox">Add box</button></div>
+    ${F.sel('font','Font',b0.font,fontOpts,1)}${F.numf('size','Text size',b0.size,1)}${F.color('color','Text colour',b0.color,1)}${F.color('labelColor','Name colour',b0.labelColor,1)}${F.color('bg','Box fill',b0.bg,1)}${F.color('borderColor','Box border',b0.borderColor,1)}</div>${actBtns}`}
+  else if(it.type==='image')s=`<div class="sec"><h4>Image</h4>${F.text('name','Name',it.name||'Image')}${geo(it)}${rotOp(it)}<div class="r2">${F.chk('flipX','Flip H',it.flipX)}${F.chk('flipY','Flip V',it.flipY)}</div><div class="btns"><button class="btn sm" data-act="ratio">Original ratio</button><button class="btn sm" data-act="fill">Fill card</button></div><p class="tip">Corner handle keeps the ratio; hold Shift to stretch.</p></div>${actBtns}`;
+  else if(it.type==='orn')s=`<div class="sec"><h4>${ORN_NAMES[it.orn]||'Ornament'}</h4>${F.color('color','Colour',it.color)}${geo(it)}${rotOp(it)}</div>${actBtns}`;
+  else if(it.type==='shape')s=`<div class="sec"><h4>${it.shape==='ellipse'?'Ellipse':'Rectangle'}</h4>${F.color('fill','Fill',it.fill)}${F.range('fillOpacity','Fill opacity',it.fillOpacity??1,0,1,.05)}${F.color('stroke','Outline',it.stroke)}<div class="r2">${F.num('strokeW','Outline width',it.strokeW)}${it.shape!=='ellipse'?F.num('radius','Radius',it.radius):''}</div>${geo(it)}${rotOp(it)}</div>${actBtns}`;
+  cProps.innerHTML=s}
+bindForm(cProps,()=>{const f=CE.sel&&findItem(CE.sel);return f&&f.item},(t,k)=>{renderCard();save();if(['label','name'].includes(k))renderText();if(['showTitle'].includes(k))renderProps()},pushHist);
+cProps.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;const f=findItem(CE.sel);if(!f)return;const it=f.item,arr=f.parent?f.parent.boxes:CE.tpl.items,i=arr.indexOf(it);pushHist();
+  switch(a.dataset.act){
+    case 'front':arr.splice(i,1);arr.push(it);break;
+    case 'back':arr.splice(i,1);arr.unshift(it);break;
+    case 'dup':{const c=cloneItem(it);c.x+=20;c.y+=20;arr.splice(i+1,0,c);CE.sel=c.id;break}
+    case 'del':arr.splice(i,1);CE.sel=null;break;
+    case 'selgroup':CE.sel=f.parent.id;break;
+    case 'arr-v':arrange(it,'v');break;case 'arr-h':arrange(it,'h');break;case 'arr-g':arrange(it,'g');break;
+    case 'addbox':{const b=newBox('Field '+(it.boxes.length+1),it.boxes[0]?it.boxes[0].size:20);if(it.boxes[0])['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius'].forEach(k=>b[k]=it.boxes[0][k]);it.boxes.push(b);arrange(it,it.boxes.length>4?'g':'v');break}
+    case 'ratio':{const im=new Image();im.onload=()=>{it.h=R(it.w*im.naturalHeight/im.naturalWidth);renderCard();renderProps();save()};im.src=W.assets[it.asset];break}
+    case 'fill':Object.assign(it,{x:0,y:0,w:CE.tpl.w,h:CE.tpl.h,rot:0});break;
+  }save();renderCard();renderProps();renderText()});
+
+/* --- text window (right side) --- */
+let textFilter='';
+function renderText(){const groups=CE.tpl.items.filter(i=>i.type==='group');const q=textFilter.toLowerCase();
+  cText.innerHTML=`<div style="position:sticky;top:0;background:var(--panel);padding:8px 0 2px;z-index:1"><input type="text" id="tp-q" placeholder="Find a text box…" value="${esc(textFilter)}"></div>`+
+  (groups.length?groups.map(g=>{const bx=g.boxes.filter(b=>!q||(b.label+' '+b.text+' '+g.name).toLowerCase().includes(q));if(q&&!bx.length)return'';
+    return `<div class="tpg" data-gid="${g.id}"><div class="tpgh" data-pick="${g.id}"><span class="sw" style="background:${g.borderColor}"></span><input type="text" data-gname="${g.id}" value="${esc(g.name)}" aria-label="Group name"><button class="x" data-delg="${g.id}" title="Delete group">×</button></div>
+    ${bx.map(b=>`<div class="tpb" data-bid="${b.id}"><div class="tpbh"><input type="text" data-blabel="${b.id}" value="${esc(b.label)}" aria-label="Box name"><button class="x" data-delb="${b.id}" title="Delete text box">×</button></div><textarea data-id="${b.id}" rows="${Math.min(6,Math.max(1,(b.text.match(/\n/g)||[]).length+1))}" placeholder="Text players will see…">${esc(b.text)}</textarea></div>`).join('')}
+    <button class="tpadd" data-addb="${g.id}">+ Add text box</button></div>`}).join(''):`<p class="muted">No text groups yet. Use “Add text group” in Card tools.</p>`);
+  markText()}
+function markText(){const f=CE.sel&&findItem(CE.sel);$$('.tpg',cText).forEach(g=>g.classList.toggle('on',!!f&&(f.item.id===g.dataset.gid||(f.parent&&f.parent.id===g.dataset.gid))));$$('.tpb',cText).forEach(b=>b.classList.toggle('on',!!f&&f.item.id===b.dataset.bid))}
+cText.addEventListener('focusin',e=>{if(e.target.matches('textarea,[data-gname],[data-blabel]')){pushHist();const id=e.target.dataset.id||e.target.dataset.blabel||e.target.dataset.gname;if(id&&CE.sel!==id){CE.sel=id;renderCard();renderProps();markText()}}});
+cText.addEventListener('input',e=>{const t=e.target;
+  if(t.id==='tp-q'){textFilter=t.value;renderText();const q=$('#tp-q',cText);q.focus();q.setSelectionRange(q.value.length,q.value.length);return}
+  const f=findItem(t.dataset.id||t.dataset.blabel||t.dataset.gname);if(!f)return;
+  if(t.dataset.id)f.item.text=t.value;else if(t.dataset.blabel)f.item.label=t.value;else f.item.name=t.value;
+  renderCard();save();if(t.dataset.id){t.rows=Math.min(6,Math.max(1,(t.value.match(/\n/g)||[]).length+1))}
+  const pi=$('[data-k="label"],[data-k="name"]',cProps);if(pi&&!t.dataset.id)pi.value=t.value});
+cText.addEventListener('click',e=>{const t=e.target;
+  if(t.dataset.delg){pushHist();CE.tpl.items=CE.tpl.items.filter(i=>i.id!==t.dataset.delg);CE.sel=null;save();renderCard();renderProps();renderText();return}
+  if(t.dataset.delb){const f=findItem(t.dataset.delb);pushHist();f.parent.boxes=f.parent.boxes.filter(b=>b!==f.item);if(CE.sel===f.item.id)CE.sel=null;save();renderCard();renderProps();renderText();return}
+  if(t.dataset.addb){const g=findItem(t.dataset.addb).item;CE.sel=g.id;$('[data-act="box"]',cTools).click();setTimeout(()=>{const ta=$(`textarea[data-id="${CE.sel}"]`,cText);ta&&ta.focus()},0);return}
+  const pk=t.closest('[data-pick]');if(pk&&t.tagName!=='INPUT')selectC(pk.dataset.pick)});
+
+/* ================= MAP EDITOR ================= */
+const ME={map:null,tool:'brush',color:'#3b2a1a',size:12,opacity:1,soft:0,smooth:.35,zoom:1,pan:{x:0,y:0},active:null,sel:null,hist:[],fut:[],canv:new Map(),dirty:new Set(),sc:null,lastPt:null};
+const mStage=$('#m-stage'),mWorld=$('#m-world'),mCur=$('#m-cur');
+const mToolsB=h('<div></div>'),mLayersB=h('<div></div>'),mPropsB=h('<div></div>');
+const mWins=[
+  makeWin($('#m-wins'),'m-tools','Brush and tools',{x:()=>12,y:()=>64,w:260,maxh:'calc(60vh - 40px)'},mToolsB),
+  makeWin($('#m-wins'),'m-layers','Layers',{x:()=>Math.max(290,innerWidth-292),y:()=>64,w:280,maxh:'calc(50vh - 40px)'},mLayersB),
+  makeWin($('#m-wins'),'m-props','Map and image',{x:()=>Math.max(290,innerWidth-292),y:()=>R(innerHeight*.5)+76,w:280,maxh:'calc(50vh - 130px)'},mPropsB)];
+$('#m-resetw').onclick=()=>mWins.forEach(w=>w._reset());
+function openMap(m){ME.map=m;ME.canv=new Map();ME.dirty=new Set();ME.hist=[];ME.fut=[];ME.sel=null;ME.lastPt=null;const p=m.layers.filter(l=>l.type==='paint');ME.active=(p[p.length-1]||{}).id||null;
+  ME.sc=document.createElement('canvas');ME.sc.width=m.w;ME.sc.height=m.h;show('map')}
+saveHooks.push(()=>{if(!ME.map)return;ME.dirty.forEach(id=>{const l=ME.map.layers.find(x=>x.id===id),c=ME.canv.get(id);if(l&&c)l.data=isBlank(c)?null:c.toDataURL('image/png')});ME.dirty.clear()});
+function isBlank(c){const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=64)if(d[i])return false;return true}
+screens.map={enter(){$('#m-name').value=ME.map.name;setTool(ME.tool);renderMap();renderMTools();renderLayers();renderMProps();requestAnimationFrame(fitMap)},
+  leave(){makeThumb();flush();ME.map=null}};
+$('#m-back').onclick=()=>show('world');
+$('#m-name').oninput=e=>{ME.map.name=e.target.value;save()};
+function ensureCanvas(l){let c=ME.canv.get(l.id);if(!c){c=document.createElement('canvas');c.width=ME.map.w;c.height=ME.map.h;ME.canv.set(l.id,c);if(l.data){const im=new Image();im.onload=()=>c.getContext('2d').drawImage(im,0,0);im.src=l.data}}return c}
+const imgCSS=l=>`left:${l.x}px;top:${l.y}px;width:${l.w}px;height:${l.h}px;opacity:${l.opacity};transform:rotate(${l.rot||0}deg) scale(${l.flipX?-1:1},1);display:${l.visible?'block':'none'}`;
+function renderMap(){const m=ME.map;mWorld.innerHTML='';
+  const clip=h(`<div class="mclip" style="width:${m.w}px;height:${m.h}px"></div>`);clip.append(h(`<div class="mbg" style="width:${m.w}px;height:${m.h}px;background:${m.bg}"></div>`));
+  m.layers.forEach(l=>{if(l.type==='paint'){const c=ensureCanvas(l);c.style.cssText=`width:${m.w}px;height:${m.h}px;opacity:${l.opacity};display:${l.visible?'block':'none'}`;c.dataset.id=l.id;clip.append(c)}
+    else{const im=new Image();im.className='mimg';im.dataset.id=l.id;im.draggable=false;im.alt='';im.src=W.assets[l.asset]||'';im.style.cssText=imgCSS(l);clip.append(im)}});
+  const g=m.grid;if(g.on)clip.append(h(`<div class="mgrid" style="width:${m.w}px;height:${m.h}px;opacity:${g.opacity};background-image:linear-gradient(to right,${g.color} 1px,transparent 1px),linear-gradient(to bottom,${g.color} 1px,transparent 1px);background-size:${g.size}px ${g.size}px"></div>`));
+  mWorld.append(clip);drawMSel();$('#m-dims').textContent=`${m.w} × ${m.h}px`;updMUndo()}
+function drawMSel(){$$('.msel',mWorld).forEach(e=>e.remove());const l=ME.sel&&ME.map.layers.find(x=>x.id===ME.sel);if(!l||l.type!=='image')return;
+  mWorld.append(h(`<div class="msel" style="left:${l.x}px;top:${l.y}px;width:${l.w}px;height:${l.h}px;transform:rotate(${l.rot||0}deg)"><div class="hdl"></div></div>`))}
+function applyMView(){mWorld.style.transform=`translate(${ME.pan.x}px,${ME.pan.y}px) scale(${ME.zoom})`;mStage.style.setProperty('--iz',1/ME.zoom);$('#m-zl').textContent=R(ME.zoom*100)+'%';mCur.style.width=mCur.style.height=Math.max(4,ME.size*ME.zoom)+'px'}
+function fitMap(){const r=mStage.getBoundingClientRect();ME.zoom=clamp(Math.min((r.width-80)/ME.map.w,(r.height-80)/ME.map.h),.03,8);ME.pan={x:(r.width-ME.map.w*ME.zoom)/2,y:(r.height-ME.map.h*ME.zoom)/2};applyMView()}
+$('#m-zin').onclick=()=>zoomCenter(ME,mStage,applyMView,1.25);$('#m-zout').onclick=()=>zoomCenter(ME,mStage,applyMView,.8);$('#m-fit').onclick=fitMap;
+$('#m-100').onclick=()=>zoomCenter(ME,mStage,applyMView,1/ME.zoom);
+mStage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(ME,mStage,applyMView,e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))},{passive:false});
+const toMap=e=>{const r=mStage.getBoundingClientRect();return{x:(e.clientX-r.left-ME.pan.x)/ME.zoom,y:(e.clientY-r.top-ME.pan.y)/ME.zoom}};
+function setTool(t){ME.tool=t;const s=$('#scr-map');['brush','eraser','move','hand'].forEach(x=>s.classList.toggle('t-'+x,x===t));$$('[data-tool]',mToolsB).forEach(b=>b.classList.toggle('on',b.dataset.tool===t));mCur.style.display='none'}
+/* history */
+const snapMap=()=>JSON.stringify({layers:ME.map.layers.map(l=>{const c={...l};delete c.data;return c}),bg:ME.map.bg,grid:ME.map.grid});
+function pushMState(){const s=snapMap(),last=ME.hist[ME.hist.length-1];if(last&&last.k==='state'&&last.s===s)return;ME.hist.push({k:'state',s});if(ME.hist.length>50)ME.hist.shift();ME.fut=[];updMUndo()}
+function applySnap(s){const o=JSON.parse(s),old=new Map(ME.map.layers.map(l=>[l.id,l.data]));o.layers.forEach(l=>{if(l.type==='paint'){l.data=old.has(l.id)?old.get(l.id):null;ensureCanvas(l)}});ME.map.layers=o.layers;ME.map.bg=o.bg;ME.map.grid=o.grid;
+  if(!ME.map.layers.some(l=>l.id===ME.active)){const p=ME.map.layers.filter(l=>l.type==='paint');ME.active=(p[p.length-1]||{}).id||null}if(ME.sel&&!ME.map.layers.some(l=>l.id===ME.sel))ME.sel=null}
+function mUndo(){const e=ME.hist.pop();if(!e)return;if(e.k==='paint'){ME.canv.get(e.id).getContext('2d').putImageData(e.before,e.x,e.y);ME.dirty.add(e.id);ME.fut.push(e)}else{ME.fut.push({k:'state',s:snapMap()});applySnap(e.s)}afterM()}
+function mRedo(){const e=ME.fut.pop();if(!e)return;if(e.k==='paint'){ME.canv.get(e.id).getContext('2d').putImageData(e.after,e.x,e.y);ME.dirty.add(e.id);ME.hist.push(e)}else{ME.hist.push({k:'state',s:snapMap()});applySnap(e.s)}afterM()}
+function afterM(){renderMap();renderLayers();renderMProps();save()}
+function updMUndo(){$('#m-undo').disabled=!ME.hist.length;$('#m-redo').disabled=!ME.fut.length}
+$('#m-undo').onclick=mUndo;$('#m-redo').onclick=mRedo;
+/* painting */
+let stroke=null;
+function beginStroke(e,p){const L=ME.map.layers.find(l=>l.id===ME.active&&l.type==='paint');
+  if(!L){toast('Select a paint layer in Layers first');return}if(!L.visible){toast('That layer is hidden');return}
+  const cv=ME.canv.get(L.id),snap=document.createElement('canvas');snap.width=cv.width;snap.height=cv.height;snap.getContext('2d').drawImage(cv,0,0);
+  const er=ME.tool==='eraser';let ctx;
+  if(er){ctx=cv.getContext('2d');ctx.globalCompositeOperation='destination-out';ctx.globalAlpha=ME.opacity}
+  else{const sc=ME.sc;ctx=sc.getContext('2d');ctx.clearRect(0,0,sc.width,sc.height);sc.style.cssText=`position:absolute;left:0;top:0;width:${ME.map.w}px;height:${ME.map.h}px;opacity:${ME.opacity*L.opacity}`;cv.after(sc);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}
+  ctx.strokeStyle=ctx.fillStyle=ME.color;ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor=er?'#000':ME.color;ctx.shadowBlur=ME.soft*ME.size*.6;
+  stroke={L,cv,ctx,snap,er,bb:{x0:p.x,y0:p.y,x1:p.x,y1:p.y},last:p,mid:p};
+  if(e.shiftKey&&ME.lastPt){stroke.last=stroke.mid=ME.lastPt;grow(ME.lastPt);segment(p,e,true)}else dot(p,e)}
+const pw=e=>ME.size*(e.pointerType==='pen'&&e.pressure>0?(.15+.85*e.pressure):1);
+function grow(p){const b=stroke.bb;b.x0=Math.min(b.x0,p.x);b.y0=Math.min(b.y0,p.y);b.x1=Math.max(b.x1,p.x);b.y1=Math.max(b.y1,p.y)}
+function dot(p,e){const c=stroke.ctx;c.beginPath();c.arc(p.x,p.y,pw(e)/2,0,Math.PI*2);c.fill();grow(p)}
+function segment(raw,e,straight){const s=stroke,k=straight?0:ME.smooth,q={x:s.last.x+(raw.x-s.last.x)*(1-k),y:s.last.y+(raw.y-s.last.y)*(1-k)},c=s.ctx;
+  if(straight){c.beginPath();c.moveTo(s.last.x,s.last.y);c.lineTo(q.x,q.y);c.lineWidth=pw(e);c.stroke();s.last=s.mid=q;grow(q);return}
+  const mid={x:(s.last.x+q.x)/2,y:(s.last.y+q.y)/2};c.beginPath();c.moveTo(s.mid.x,s.mid.y);c.quadraticCurveTo(s.last.x,s.last.y,mid.x,mid.y);c.lineWidth=pw(e);c.stroke();s.mid=mid;s.last=q;grow(q)}
+function endStroke(){const s=stroke;if(!s)return;stroke=null;const c=s.cv.getContext('2d');
+  if(s.er){c.globalCompositeOperation='source-over';c.globalAlpha=1;c.shadowBlur=0}
+  else{c.save();c.globalAlpha=ME.opacity;c.drawImage(ME.sc,0,0);c.restore();ME.sc.remove()}
+  const pad=ME.size*(1+ME.soft)+4,x=clamp(Math.floor(s.bb.x0-pad),0,s.cv.width),y=clamp(Math.floor(s.bb.y0-pad),0,s.cv.height),w=clamp(Math.ceil(s.bb.x1+pad),0,s.cv.width)-x,hh=clamp(Math.ceil(s.bb.y1+pad),0,s.cv.height)-y;
+  if(w>0&&hh>0){ME.hist.push({k:'paint',id:s.L.id,x,y,before:s.snap.getContext('2d').getImageData(x,y,w,hh),after:c.getImageData(x,y,w,hh)});if(ME.hist.length>50)ME.hist.shift();ME.fut=[]}
+  ME.lastPt=s.last;ME.dirty.add(s.L.id);updMUndo();save()}
+mStage.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.hint'))return;
+  if(e.button===1||spaceDown||ME.tool==='hand'){e.preventDefault();startPan(e,ME,mStage,applyMView);return}
+  if(e.button!==0)return;const p=toMap(e);
+  if(ME.tool==='brush'||ME.tool==='eraser'){beginStroke(e,p);if(!stroke)return;mStage.setPointerCapture(e.pointerId);
+    const mv=ev=>{(ev.getCoalescedEvents?ev.getCoalescedEvents():[ev]).forEach(ce=>segment(toMap(ce),ce))};
+    const up=()=>{mStage.removeEventListener('pointermove',mv);mStage.removeEventListener('pointerup',up);mStage.removeEventListener('pointercancel',up);endStroke()};
+    mStage.addEventListener('pointermove',mv);mStage.addEventListener('pointerup',up);mStage.addEventListener('pointercancel',up);return}
+  if(ME.tool==='move'){const hd=e.target.closest('.hdl'),img=e.target.closest('.mimg');const id=hd?ME.sel:img?img.dataset.id:null;
+    if(!id){if(ME.sel){ME.sel=null;drawMSel();renderLayers();renderMProps()}startPan(e,ME,mStage,applyMView);return}
+    const l=ME.map.layers.find(x=>x.id===id);if(ME.sel!==id){ME.sel=id;drawMSel();renderLayers();renderMProps()}
+    pushMState();const st={x:l.x,y:l.y,w:l.w,h:l.h},ratio=l.w/l.h;mStage.setPointerCapture(e.pointerId);
+    const mv=ev=>{const q=toMap(ev),dx=q.x-p.x,dy=q.y-p.y;if(hd){l.w=Math.max(8,R(st.w+dx));l.h=ev.shiftKey?Math.max(8,R(st.h+dy)):R(l.w/ratio)}else{l.x=R(st.x+dx);l.y=R(st.y+dy)}
+      const node=$(`.mimg[data-id="${id}"]`,mWorld);node.style.cssText=imgCSS(l);const sl=$('.msel',mWorld);if(sl){sl.style.left=l.x+'px';sl.style.top=l.y+'px';sl.style.width=l.w+'px';sl.style.height=l.h+'px'}};
+    const up=()=>{mStage.removeEventListener('pointermove',mv);mStage.removeEventListener('pointerup',up);renderMProps();save()};
+    mStage.addEventListener('pointermove',mv);mStage.addEventListener('pointerup',up)}});
+mStage.addEventListener('pointermove',e=>{if(ME.tool!=='brush'&&ME.tool!=='eraser'||spaceDown){mCur.style.display='none';return}const r=mStage.getBoundingClientRect();mCur.style.display='block';mCur.style.left=(e.clientX-r.left)+'px';mCur.style.top=(e.clientY-r.top)+'px';mCur.style.width=mCur.style.height=Math.max(4,ME.size*ME.zoom)+'px'});
+mStage.addEventListener('pointerleave',()=>mCur.style.display='none');
+mStage.addEventListener('dragover',e=>e.preventDefault());
+mStage.addEventListener('drop',e=>{e.preventDefault();addMapImages([...e.dataTransfer.files],toMap(e))});
+function addMapImages(files,at){readImages(files,(src,nw,nh,name)=>{const m=ME.map,r=mStage.getBoundingClientRect(),c=at||{x:(r.width/2-ME.pan.x)/ME.zoom,y:(r.height/2-ME.pan.y)/ME.zoom},s=Math.min(1,m.w*.35/nw,m.h*.35/nh),w=R(nw*s),hh=R(nh*s);
+  pushMState();const id='a'+uid();W.assets[id]=src;const l={id:uid(),type:'image',name,asset:id,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1,visible:true,flipX:false};m.layers.push(l);ME.sel=l.id;setTool('move');afterM()})}
+/* map tools window */
+const SWATCH=['#1d150d','#3b2a1a','#6b4a2b','#8c2f1f','#c9a24a','#3e6b3a','#7ea35a','#2f5f7f','#6aa5c7','#d8cba8','#f6f0e0','#ffffff'];
+function renderMTools(){mToolsB.innerHTML=`<div class="sec"><div class="tools4">
+  <button class="btn" data-tool="brush">Brush<kbd>B</kbd></button><button class="btn" data-tool="eraser">Eraser<kbd>E</kbd></button><button class="btn" data-tool="move">Move<kbd>V</kbd></button><button class="btn" data-tool="hand">Hand<kbd>H</kbd></button></div></div>
+  <div class="sec"><h4>Colour</h4><input type="color" id="mb-color" value="${ME.color}"><div class="swatches">${SWATCH.map(c=>`<button data-sw="${c}" style="background:${c}" title="${c}"></button>`).join('')}</div></div>
+  <div class="sec"><h4>Brush</h4>
+  <label class="f"><span>Size <b id="mb-sv">${ME.size}</b></span><input type="range" id="mb-size" min="1" max="300" value="${ME.size}"></label>
+  <label class="f"><span>Opacity <b id="mb-ov">${R(ME.opacity*100)}%</b></span><input type="range" id="mb-op" min="1" max="100" value="${R(ME.opacity*100)}"></label>
+  <label class="f"><span>Softness</span><input type="range" id="mb-soft" min="0" max="100" value="${R(ME.soft*100)}"></label>
+  <label class="f"><span>Smoothing</span><input type="range" id="mb-sm" min="0" max="90" value="${R(ME.smooth*100)}"></label>
+  <p class="tip">Pen tablets use pressure for size. Shift-click to draw a straight line from your last stroke.</p></div>
+  <div class="sec"><div class="btns"><button class="btn sm pri" data-act="addimg">Add PNG to map</button></div></div>`;
+  setTool(ME.tool)}
+mToolsB.addEventListener('click',e=>{const t=e.target.closest('[data-tool]');if(t)setTool(t.dataset.tool);const s=e.target.closest('[data-sw]');if(s){ME.color=s.dataset.sw;$('#mb-color',mToolsB).value=ME.color;if(ME.tool!=='brush')setTool('brush')}
+  if(e.target.closest('[data-act="addimg"]'))pickFiles('image/png,image/*',true,fs=>addMapImages(fs))});
+mToolsB.addEventListener('input',e=>{const t=e.target;if(t.id==='mb-color')ME.color=t.value;if(t.id==='mb-size'){ME.size=+t.value;$('#mb-sv').textContent=ME.size}
+  if(t.id==='mb-op'){ME.opacity=t.value/100;$('#mb-ov').textContent=t.value+'%'}if(t.id==='mb-soft')ME.soft=t.value/100;if(t.id==='mb-sm')ME.smooth=t.value/100});
+function setSize(v){ME.size=clamp(R(v),1,300);const s=$('#mb-size',mToolsB);if(s){s.value=ME.size;$('#mb-sv').textContent=ME.size}mCur.style.width=mCur.style.height=Math.max(4,ME.size*ME.zoom)+'px'}
+/* layers window */
+function renderLayers(){const m=ME.map,act=m.layers.find(l=>l.id===(ME.sel||ME.active));
+  mLayersB.innerHTML=`<div class="btns" style="margin-top:8px"><button class="btn sm" data-la="addpaint">+ Paint layer</button><button class="btn sm" data-la="addimg">+ PNG image</button></div>`+
+  [...m.layers].reverse().map(l=>`<div class="ly${(l.type==='paint'?l.id===ME.active&&!ME.sel:l.id===ME.sel)?' on':''}" data-lid="${l.id}">
+    <button class="x${l.visible?'':' off'}" data-la="eye" title="${l.visible?'Hide':'Show'}">${l.visible?'●':'○'}</button>
+    <span class="lt">${l.type==='image'?`<img src="${W.assets[l.asset]||''}" alt="">`:'paint'}</span>
+    <input type="text" value="${esc(l.name)}" data-lname aria-label="Layer name">
+    <button class="x" data-la="up" title="Move up">↑</button><button class="x" data-la="down" title="Move down">↓</button><button class="x" data-la="del" title="Delete layer">×</button></div>`).join('')+
+  (act?`<div class="sec">${F.range('opacity',`Opacity of “${esc(act.name)}”`,act.opacity,0,1,.05)}${act.type==='paint'?`<div class="btns"><button class="btn sm ghost" data-la="clear">Clear layer</button></div>`:''}</div>`:'')}
+mLayersB.addEventListener('click',e=>{const row=e.target.closest('[data-lid]'),b=e.target.closest('[data-la]');const m=ME.map;
+  if(b&&b.dataset.la==='addpaint'){pushMState();const l={id:uid(),type:'paint',name:'Layer '+(m.layers.filter(x=>x.type==='paint').length+1),visible:true,opacity:1,data:null};const ai=m.layers.findIndex(x=>x.id===ME.active);m.layers.splice(ai+1,0,l);ME.active=l.id;ME.sel=null;setTool('brush');afterM();return}
+  if(b&&b.dataset.la==='addimg'){pickFiles('image/png,image/*',true,fs=>addMapImages(fs));return}
+  if(b&&b.dataset.la==='clear'){const l=m.layers.find(x=>x.id===ME.active);if(!l)return;const c=ME.canv.get(l.id),x=c.getContext('2d');ME.hist.push({k:'paint',id:l.id,x:0,y:0,before:x.getImageData(0,0,c.width,c.height),after:new ImageData(c.width,c.height)});ME.fut=[];x.clearRect(0,0,c.width,c.height);ME.dirty.add(l.id);updMUndo();save();return}
+  if(!row)return;const l=m.layers.find(x=>x.id===row.dataset.lid),i=m.layers.indexOf(l);
+  if(b){pushMState();const a=b.dataset.la;
+    if(a==='eye')l.visible=!l.visible;
+    if(a==='up'&&i<m.layers.length-1){m.layers.splice(i,1);m.layers.splice(i+1,0,l)}
+    if(a==='down'&&i>0){m.layers.splice(i,1);m.layers.splice(i-1,0,l)}
+    if(a==='del'){m.layers.splice(i,1);if(ME.sel===l.id)ME.sel=null;if(ME.active===l.id){const p=m.layers.filter(x=>x.type==='paint');ME.active=(p[p.length-1]||{}).id||null}}
+    afterM();return}
+  if(e.target.matches('[data-lname]'))return;
+  if(l.type==='paint'){ME.active=l.id;ME.sel=null;if(ME.tool==='move')setTool('brush')}else{ME.sel=l.id;setTool('move')}
+  drawMSel();renderLayers();renderMProps()});
+mLayersB.addEventListener('focusin',e=>{if(e.target.matches('[data-lname],[data-k]'))pushMState()});
+mLayersB.addEventListener('pointerdown',e=>{if(e.target.matches('[data-k]'))pushMState()});
+mLayersB.addEventListener('input',e=>{const m=ME.map;if(e.target.matches('[data-lname]')){const l=m.layers.find(x=>x.id===e.target.closest('[data-lid]').dataset.lid);l.name=e.target.value;save();return}
+  if(e.target.dataset.k==='opacity'){const l=m.layers.find(x=>x.id===(ME.sel||ME.active));if(!l)return;l.opacity=+e.target.value;
+    if(l.type==='paint'){ME.canv.get(l.id).style.opacity=l.opacity}else{$(`.mimg[data-id="${l.id}"]`,mWorld).style.opacity=l.opacity}save()}});
+/* map + image props window */
+function renderMProps(){const m=ME.map,l=ME.sel&&m.layers.find(x=>x.id===ME.sel);
+  mPropsB.innerHTML=(l?`<div class="sec"><h4>Selected image</h4><div class="r4">${F.num('x','X',l.x)}${F.num('y','Y',l.y)}${F.num('w','W',l.w)}${F.num('h','H',l.h)}</div>${F.range('rot','Rotation',l.rot||0,-180,180,1)}${F.chk('flipX','Flip',l.flipX)}
+    <div class="btns"><button class="btn sm" data-ma="ratio">Original ratio</button><button class="btn sm" data-ma="dup">Duplicate</button><button class="btn sm ghost" data-ma="del">Delete</button></div><p class="tip">Corner handle keeps the ratio; hold Shift to stretch.</p></div>`:'')+
+  `<div class="sec"><h4>Map</h4>${F.color('bg','Paper colour',m.bg)}
+    <div class="r2"><label class="m"><span>Width</span><input type="number" id="mp-w" value="${m.w}"></label><label class="m"><span>Height</span><input type="number" id="mp-h" value="${m.h}"></label></div>
+    <div class="btns"><button class="btn sm" data-ma="resize">Apply canvas size</button></div>
+    ${F.chk('grid.on','Square grid',m.grid.on)}${m.grid.on?`${F.numf('grid.size','Cell size (px)',m.grid.size)}${F.color('grid.color','Grid colour',m.grid.color)}${F.range('grid.opacity','Grid opacity',m.grid.opacity,0,1,.05)}`:''}</div>`}
+mPropsB.addEventListener('focusin',e=>{if(e.target.matches('[data-k]'))pushMState()});
+mPropsB.addEventListener('pointerdown',e=>{if(e.target.matches('[data-k]'))pushMState()});
+mPropsB.addEventListener('input',e=>{const t=e.target,k=t.dataset.k;if(!k)return;let v=t.type==='checkbox'?t.checked:(t.type==='number'||t.type==='range')?parseFloat(t.value):t.value;if(typeof v==='number'&&isNaN(v))return;
+  const isMap=k==='bg'||k.startsWith('grid.');const o=isMap?ME.map:ME.map.layers.find(x=>x.id===ME.sel);if(!o)return;if(k==='grid.size')v=Math.max(4,v);setPath(o,k,v);renderMap();save();if(k==='grid.on')renderMProps()});
+mPropsB.addEventListener('click',e=>{const a=e.target.closest('[data-ma]');if(!a)return;const m=ME.map,l=m.layers.find(x=>x.id===ME.sel);
+  if(a.dataset.ma==='resize'){const w=clamp(+$('#mp-w',mPropsB).value||m.w,200,6000),hh=clamp(+$('#mp-h',mPropsB).value||m.h,200,6000);if(w===m.w&&hh===m.h)return;
+    m.layers.forEach(x=>{if(x.type!=='paint')return;const o=ensureCanvas(x),n=document.createElement('canvas');n.width=w;n.height=hh;n.getContext('2d').drawImage(o,0,0);ME.canv.set(x.id,n);ME.dirty.add(x.id)});
+    m.w=w;m.h=hh;ME.sc.width=w;ME.sc.height=hh;ME.hist=ME.hist.filter(x=>x.k==='state');ME.fut=[];afterM();fitMap();toast('Canvas resized; content kept at top-left');return}
+  if(!l)return;pushMState();
+  if(a.dataset.ma==='del'){m.layers=m.layers.filter(x=>x!==l);ME.sel=null}
+  if(a.dataset.ma==='dup'){const c={...l,id:uid(),x:l.x+30,y:l.y+30,name:l.name+' copy'};m.layers.splice(m.layers.indexOf(l)+1,0,c);ME.sel=c.id}
+  if(a.dataset.ma==='ratio'){const im=$(`.mimg[data-id="${l.id}"]`,mWorld);if(im&&im.naturalWidth)l.h=R(l.w*im.naturalHeight/im.naturalWidth)}
+  afterM()});
+function makeThumb(){const m=ME.map;if(!m)return;try{const s=Math.min(1,360/m.w),c=document.createElement('canvas');c.width=R(m.w*s);c.height=R(m.h*s);const x=c.getContext('2d');x.fillStyle=m.bg;x.fillRect(0,0,c.width,c.height);
+  m.layers.forEach(l=>{if(!l.visible)return;x.globalAlpha=l.opacity;if(l.type==='paint')x.drawImage(ME.canv.get(l.id),0,0,c.width,c.height);else{const im=$(`.mimg[data-id="${l.id}"]`,mWorld);if(im&&im.complete&&im.naturalWidth){x.save();x.translate((l.x+l.w/2)*s,(l.y+l.h/2)*s);x.rotate((l.rot||0)*Math.PI/180);if(l.flipX)x.scale(-1,1);x.drawImage(im,-l.w/2*s,-l.h/2*s,l.w*s,l.h*s);x.restore()}}});
+  m.thumb=c.toDataURL('image/jpeg',.82)}catch(e){}}
+
+/* ================= ACCESS + ROUTING ================= */
+const writerScreens=['worlds','world','card','map'];
+function ghFromURL(){const m=location.hostname.match(/^([^.]+)\.github\.io$/i);if(!m)return null;const seg=location.pathname.split('/').filter(Boolean)[0];return{owner:m[1],repo:seg&&!/\.html?$/i.test(seg)?seg:m[1]+'.github.io'}}
+const GHPAGES=!!ghFromURL();
+const ghCfg=()=>LS.get('gh',{});
+function route(){if(location.hash==='#writer'){if(!writerScreens.includes(cur))enterWriter()}else if(!cur||writerScreens.includes(cur)||cur==='gate')show('home')}
+function enterWriter(){const c=ghCfg();if(GHPAGES&&!(c.ok&&c.token)){show('gate');return}show('worlds')}
+screens.worlds.enter=()=>{if(location.hash!=='#writer'){try{history.replaceState(null,'','#writer')}catch(e){}}renderWorlds()};
+async function verifyGH(c){if(!c.token||!c.owner||!c.repo)return{ok:false,msg:'Fill in the token, owner and repository.'};
+  try{const r=await fetch(`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`,{headers:{Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json'}});
+    if(r.status===401)return{ok:false,msg:'GitHub rejected that token. Check that you copied all of it and that it has not expired.'};
+    if(r.status===404)return{ok:false,msg:"Repository not found, or this token isn't allowed to see it."};
+    const j=await r.json();if(!(j.permissions&&j.permissions.push))return{ok:false,msg:'This account can read the repository but not write to it.'};
+    return{ok:true,branch:j.default_branch||'main',msg:'Signed in as the Writer.'}}
+  catch(e){return{ok:false,msg:"Couldn't reach GitHub from this page. Sign in from your GitHub Pages site instead."}}}
+screens.gate={enter(){const g=ghFromURL()||{},c=ghCfg();$('#g-owner').value=c.owner||g.owner||'';$('#g-repo').value=c.repo||g.repo||'';$('#g-msg').textContent='';$('#g-token').focus()}};
+$('#g-go').onclick=async()=>{const cfg={token:$('#g-token').value.trim(),owner:$('#g-owner').value.trim(),repo:$('#g-repo').value.trim()};$('#g-msg').textContent='Checking with GitHub…';const r=await verifyGH(cfg);$('#g-msg').textContent=r.msg;if(r.ok){LS.set('gh',{...cfg,branch:r.branch,ok:true});$('#g-token').value='';show('worlds')}};
+$('#g-token').addEventListener('keydown',e=>{if(e.key==='Enter')$('#g-go').click()});
+$('#w-gh').onclick=()=>ghDialog();
+function ghDialog(after){const c=ghCfg(),g=ghFromURL()||{};
+  modal('GitHub settings',`<p class="muted">Publishing writes your worlds into the GitHub repository that hosts this site, and players load them from there. The token is stored only in this browser.</p>
+  <label class="lbl">GitHub token</label><input type="password" id="gd-token" value="${esc(c.token||'')}" placeholder="github_pat_…" autocomplete="off">
+  <div class="r2" style="margin-top:8px"><label class="m"><span>Owner</span><input type="text" id="gd-owner" value="${esc(c.owner||g.owner||'')}"></label><label class="m"><span>Repository</span><input type="text" id="gd-repo" value="${esc(c.repo||g.repo||'')}"></label></div>
+  <p id="gd-msg" class="muted" style="margin-top:10px">${c.ok?'Connected to '+esc(c.owner+'/'+c.repo)+'.':''}</p>`,
+  [{label:'Forget token',cls:'ghost',act:()=>{LS.del('gh');toast('Token removed from this browser');if(GHPAGES)show('home')}},{label:'Close'},
+   {label:'Save and check',cls:'pri',act:mm=>{const cfg={token:$('#gd-token',mm).value.trim(),owner:$('#gd-owner',mm).value.trim(),repo:$('#gd-repo',mm).value.trim()},msg=$('#gd-msg',mm);msg.textContent='Checking with GitHub…';
+     verifyGH(cfg).then(r=>{msg.textContent=r.msg;if(r.ok){LS.set('gh',{...cfg,branch:r.branch,ok:true});setTimeout(()=>{mm.remove();after&&after()},700)}});return false}}])}
+
+/* ================= PUBLISHING ================= */
+function pubBadge(w){if(!w.publishedAt)return '<span class="badge">Not published</span>';if((w.modified||0)>w.publishedAt)return '<span class="badge stale">Changes not published</span>';return '<span class="badge live">Published</span>'}
+async function gh(path,opt={}){const c=ghCfg();const r=await fetch(`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/${path}`,{...opt,headers:{Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json',...(opt.body?{'Content-Type':'application/json'}:{})}});
+  if(r.status===404)return null;if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.message||('HTTP '+r.status))}return r.json()}
+function b64(str){const by=new TextEncoder().encode(str);let s='';for(let i=0;i<by.length;i+=0x8000)s+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));return btoa(s)}
+function unb64(b){const bin=atob(String(b).replace(/\s/g,''));return new TextDecoder().decode(Uint8Array.from(bin,ch=>ch.charCodeAt(0)))}
+const br=()=>ghCfg().branch||'main';
+async function putFile(path,content,msg){const ex=await gh(`contents/${path}?ref=${br()}`);return gh(`contents/${path}`,{method:'PUT',body:JSON.stringify({message:msg,content:b64(content),branch:br(),...(ex&&ex.sha?{sha:ex.sha}:{})})})}
+async function readIndex(){const ex=await gh(`contents/worlds/index.json?ref=${br()}`);if(!ex||!ex.content)return[];try{const v=JSON.parse(unb64(ex.content));return Array.isArray(v)?v:[]}catch(e){return[]}}
+function indexEntry(w){const mt=w.maps.find(m=>m.thumb);return{id:w.id,name:w.name,desc:w.desc||'',file:`worlds/${w.id}.json`,thumb:mt?mt.thumb:null,updated:Date.now()}}
+async function publishWorld(w){await flush();pruneAssets(w);const stamp=Date.now();const data={...w,publishedAt:stamp};
+  await putFile(`worlds/${w.id}.json`,JSON.stringify(data),`Publish world: ${w.name}`);
+  const idx=(await readIndex()).filter(e=>e.id!==w.id);idx.unshift(indexEntry(w));
+  await putFile('worlds/index.json',JSON.stringify(idx,null,1),`Update world list (${w.name})`);
+  w.publishedAt=stamp;w.modified=Math.min(w.modified||0,stamp);await flush()}
+async function unpublishWorld(w){const idx=(await readIndex()).filter(e=>e.id!==w.id);await putFile('worlds/index.json',JSON.stringify(idx,null,1),`Unpublish world: ${w.name}`);
+  const ex=await gh(`contents/worlds/${w.id}.json?ref=${br()}`);if(ex&&ex.sha)await gh(`contents/worlds/${w.id}.json`,{method:'DELETE',body:JSON.stringify({message:`Remove world file: ${w.name}`,sha:ex.sha,branch:br()})});
+  w.publishedAt=null;await flush()}
+function manualPublish(w){flush();pruneAssets(w);w.publishedAt=Date.now();w.modified=Math.min(w.modified||0,w.publishedAt);flush();
+  downloadText(w.id+'.json',JSON.stringify(w));const idx=DB.worlds.filter(x=>x.publishedAt).map(indexEntry);setTimeout(()=>downloadText('index.json',JSON.stringify(idx,null,1)),500);
+  $('#wd-pub')&&($('#wd-pub').innerHTML=pubBadge(w));toast('Upload both files into the worlds folder of your repository')}
+function publishDialog(w){const c=ghCfg();
+  if(!c.ok){modal('Publish to players',`<p>To publish straight from here, connect the Writer to the GitHub repository that hosts your site.</p><p class="muted">You can also download the two files and upload them into the <b>worlds</b> folder of the repository yourself.</p>`,
+    [{label:'Download files',act:()=>manualPublish(w)},{label:'Cancel'},{label:'Connect GitHub',cls:'pri',act:()=>{ghDialog(()=>publishDialog(w))}}]);return}
+  const run=(mm,fn,ok)=>{const msg=$('#pd-msg',mm),bs=$$('.mfoot .btn',mm);bs.forEach(b=>b.disabled=true);msg.textContent='Talking to GitHub…';
+    fn().then(()=>{msg.textContent=ok;$('#wd-pub').innerHTML=pubBadge(w)}).catch(e=>{msg.textContent='Publishing failed: '+(e.message||e)+'. Inside the Claude viewer GitHub cannot be reached; publish from your GitHub Pages site, or use Download files.'}).finally(()=>bs.forEach(b=>b.disabled=false))};
+  modal('Publish to players',`<p>Publish “${esc(w.name)}” to <b>${esc(c.owner+'/'+c.repo)}</b>? Everyone with the link will see this version about a minute after it's published, once GitHub has updated the site.</p><p id="pd-msg" class="muted"></p>`,
+   [...(w.publishedAt?[{label:'Unpublish',cls:'ghost',act:mm=>{run(mm,()=>unpublishWorld(w),'Removed. Players will stop seeing it in about a minute.');return false}}]:[]),
+    {label:'Download files',cls:'ghost',act:()=>manualPublish(w)},{label:'Close'},
+    {label:'Publish',cls:'pri',act:mm=>{run(mm,()=>publishWorld(w),'Published. Players will see it in about a minute.');return false}}])}
+
+/* ================= PLAYER ================= */
+let PDB={chars:[]},PW=null,PREVIEW=false,PINDEX=null,pSaveT;
+const MTN=`<svg viewBox="0 0 120 80" width="140" aria-hidden="true"><path d="M10 60 L35 30 L50 45 L70 18 L110 60Z" fill="none" stroke="var(--acc)" stroke-width="2"/><circle cx="92" cy="20" r="7" fill="none" stroke="var(--acc)" stroke-width="2"/></svg>`;
+function pstat(s){$$('.pstatus').forEach(e=>e.textContent=s)}
+function psave(){clearTimeout(pSaveT);pstat('Saving…');pSaveT=setTimeout(async()=>{try{await kv('readwrite','player',PDB);pstat('Saved in this browser')}catch(e){pstat('Not saved: browser storage unavailable')}},500)}
+async function fetchJSON(u){try{const r=await fetch(u,{cache:'no-cache'});if(!r.ok)return null;return await r.json()}catch(e){return null}}
+function fitView(v,st,w,hh,ap,right=0){const r=st.getBoundingClientRect(),aw=r.width-right;v.zoom=clamp(Math.min((aw-80)/w,(r.height-80)/hh),.03,8);v.pan={x:(aw-w*v.zoom)/2,y:(r.height-hh*v.zoom)/2};ap()}
+screens.home={async enter(){try{if(location.hash)history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+  PREVIEW=false;$('#h-writer').hidden=GHPAGES;const L=$('#h-list');L.innerHTML='<div class="empty">Loading worlds…</div>';
+  PINDEX=await fetchJSON('worlds/index.json');
+  L.innerHTML=Array.isArray(PINDEX)&&PINDEX.length?PINDEX.map(e=>`<article class="tile" data-id="${esc(e.id)}"><div class="thumb" data-act="open">${e.thumb?`<img src="${e.thumb}" alt="">`:MTN}</div><div class="tbody"><h3>${esc(e.name)}</h3><p>${esc(e.desc||'')}</p></div><div class="tacts"><button class="btn pri sm" data-act="open">Enter world</button></div></article>`).join('')
+   :`<div class="empty"><h3 style="margin-bottom:8px">No worlds published yet</h3>When the Writer publishes a world, it will appear here.</div>`}};
+$('#h-list').addEventListener('click',async e=>{const a=e.target.closest('[data-act]'),t=e.target.closest('.tile');if(!a||!t||!PINDEX)return;const en=PINDEX.find(x=>x.id===t.dataset.id);if(!en)return;
+  toast('Opening '+en.name+'…');const w=await fetchJSON(en.file);if(!w||!Array.isArray(w.templates)){toast("Couldn't load that world. Try again in a minute.");return}w.assets=w.assets||{};PW=w;PREVIEW=false;show('pworld')});
+$('#h-writer').onclick=()=>{location.hash='writer'};
+function previewWorld(w){PW=JSON.parse(JSON.stringify(w));PREVIEW=true;show('pworld')}
+screens.pworld={enter(){$('#pw-name').textContent=PW.name;$('#pw-desc').textContent=PW.desc||'';$('#pw-preview').hidden=!PREVIEW;$('#pw-back').textContent=PREVIEW?'Back to the Writer':'Worlds';renderPWorld()}};
+$('#pw-back').onclick=()=>show(PREVIEW?'world':'home');
+const myChars=()=>PDB.chars.filter(c=>c.worldId===PW.id);
+const baseTpl=c=>PW.templates.find(x=>x.id===c.tplId)||c.snap;
+function charTpl(c){const o=JSON.parse(JSON.stringify(baseTpl(c)));o.items.forEach(i=>i.boxes&&i.boxes.forEach(b=>{if(c.values[b.id]!=null)b.text=c.values[b.id]}));return o}
+function renderPWorld(){const ch=myChars();
+  $('#pw-chars').innerHTML=ch.length?ch.map(c=>`<article class="tile" data-id="${c.id}"><div class="thumb" data-act="open">${cardThumb(charTpl(c),184,PW)}</div><div class="tbody"><h3>${esc(c.name)}</h3><p>${esc(baseTpl(c).name)}</p></div><div class="tacts"><button class="btn pri sm" data-act="open">Open</button><button class="btn sm ghost" data-act="del">Delete</button></div></article>`).join('')
+    :`<div class="empty">${PW.templates.length?'You have no characters in this world yet. Make one from a card.':"The Writer hasn't added any cards to this world yet."}</div>`;
+  $('#pw-newchar').hidden=!PW.templates.length;
+  $('#pw-maps').innerHTML=PW.maps.length?PW.maps.map(m=>`<article class="tile" data-id="${m.id}"><div class="thumb" data-act="open" style="background:${m.bg}">${m.thumb?`<img src="${m.thumb}" alt="">`:''}</div><div class="tbody"><h3>${esc(m.name)}</h3></div><div class="tacts"><button class="btn pri sm" data-act="open">View map</button></div></article>`).join(''):`<div class="empty">No maps in this world yet.</div>`}
+$('#pw-chars').addEventListener('click',e=>{const a=e.target.closest('[data-act]'),t=e.target.closest('.tile');if(!a||!t)return;const c=PDB.chars.find(x=>x.id===t.dataset.id);
+  if(a.dataset.act==='open')openChar(c);
+  if(a.dataset.act==='del')confirmBox('Delete character?',`Delete “${c.name}”? This can't be undone.`,'Delete',()=>{PDB.chars=PDB.chars.filter(x=>x!==c);psave();renderPWorld()})});
+$('#pw-maps').addEventListener('click',e=>{const a=e.target.closest('[data-act]'),t=e.target.closest('.tile');if(!a||!t)return;PM.map=PW.maps.find(x=>x.id===t.dataset.id);show('pmap')});
+$('#pw-newchar').onclick=()=>{const m=modal('New character',`<label class="lbl">Character name</label><input type="text" id="nc-name" value="">
+  <label class="lbl">Choose a card</label><div class="sizes">${PW.templates.map((t,i)=>`<div class="size${i?'':' on'}" data-id="${t.id}" tabindex="0"><div style="position:relative;width:120px;height:140px">${cardThumb(t,120,PW)}</div><b>${esc(t.name)}</b></div>`).join('')}</div>`,
+  [{label:'Cancel'},{label:'Create character',cls:'pri',act:mm=>{const id=$('.size.on',mm).dataset.id,t=PW.templates.find(x=>x.id===id),name=$('#nc-name',mm).value.trim()||'New hero';
+    const c={id:uid(),worldId:PW.id,tplId:id,name,values:{},snap:JSON.parse(JSON.stringify(t)),created:Date.now()};
+    t.items.forEach(i=>i.boxes&&i.boxes.forEach(b=>{if(/^(character )?name$/i.test(b.label.trim())&&!b.text)c.values[b.id]=name}));
+    PDB.chars.push(c);psave();openChar(c)}}]);
+  $$('.size',m).forEach(s=>{const p=()=>$$('.size',m).forEach(x=>x.classList.toggle('on',x===s));s.onclick=p;s.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();p()}}})};
+/* character sheet */
+const PC={c:null,zoom:1,pan:{x:0,y:0},sel:null};
+const pcStage=$('#pc-stage'),pcWorld=$('#pc-world'),pcText=h('<div></div>');
+const pcWin=makeWin($('#pc-wins'),'pc-text','Fill in your card',{x:()=>Math.max(12,innerWidth-352),y:()=>64,w:340,maxh:'calc(100vh - 130px)'},pcText);
+function openChar(c){PC.c=c;PC.sel=null;show('pchar')}
+screens.pchar={enter(){$('#pc-name').value=PC.c.name;pstat('');renderPC();renderPCText();requestAnimationFrame(fitPC)}};
+$('#pc-back').onclick=()=>show('pworld');
+$('#pc-name').oninput=e=>{PC.c.name=e.target.value;psave()};
+function renderPC(){pcWorld.innerHTML=cardHTML(PW,charTpl(PC.c));if(PC.sel){const el=pcWorld.querySelector(`[data-id="${PC.sel}"]`);el&&el.classList.add('sel')}}
+const applyPC=()=>{pcWorld.style.transform=`translate(${PC.pan.x}px,${PC.pan.y}px) scale(${PC.zoom})`;pcStage.style.setProperty('--iz',1/PC.zoom);$('#pc-zl').textContent=R(PC.zoom*100)+'%'};
+function fitPC(){const t=baseTpl(PC.c);fitView(PC,pcStage,t.w,t.h,applyPC,innerWidth>900&&!pcWin.classList.contains('min')?360:0)}
+const rowsFor=t=>Math.min(8,Math.max(1,(String(t).match(/\n/g)||[]).length+1));
+function renderPCText(){const t=charTpl(PC.c),gs=t.items.filter(i=>i.type==='group'&&i.boxes.length);
+  pcText.innerHTML=gs.length?gs.map(g=>`<div class="sec"><h4>${esc(g.name)}</h4>${g.boxes.map(b=>`<div class="ptb" data-bid="${b.id}"><label for="pt-${b.id}">${esc(b.label)}</label><textarea id="pt-${b.id}" data-id="${b.id}" rows="${rowsFor(b.text)}">${esc(b.text)}</textarea></div>`).join('')}</div>`).join(''):'<p class="muted">This card has nothing to fill in.</p>'}
+pcText.addEventListener('focusin',e=>{const id=e.target.dataset.id;if(!id)return;PC.sel=id;$$('.ptb',pcText).forEach(p=>p.classList.toggle('on',p.dataset.bid===id));renderPC()});
+pcText.addEventListener('input',e=>{const id=e.target.dataset.id;if(!id)return;PC.c.values[id]=e.target.value;e.target.rows=rowsFor(e.target.value);renderPC();psave()});
+pcStage.addEventListener('pointerdown',e=>{if(e.target.closest('.hint'))return;const b=e.target.closest('.it-box');
+  if(b&&e.button===0){const ta=$(`textarea[data-id="${b.dataset.id}"]`,pcText);if(ta){pcWin.classList.remove('min');ta.scrollIntoView({block:'center'});setTimeout(()=>ta.focus(),0);return}}
+  startPan(e,PC,pcStage,applyPC)});
+pcStage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(PC,pcStage,applyPC,e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))},{passive:false});
+$('#pc-zin').onclick=()=>zoomCenter(PC,pcStage,applyPC,1.25);$('#pc-zout').onclick=()=>zoomCenter(PC,pcStage,applyPC,.8);$('#pc-fit').onclick=fitPC;
+$('#pc-copy').onclick=()=>{const t=charTpl(PC.c);const txt=[PC.c.name,...t.items.filter(i=>i.type==='group').flatMap(g=>['',g.name.toUpperCase(),...g.boxes.map(b=>`${b.label}: ${b.text}`)])].join('\n');
+  navigator.clipboard.writeText(txt).then(()=>toast('Character copied as text'),()=>toast('Copy was blocked by the browser'))};
+/* map viewer */
+const PM={map:null,zoom:1,pan:{x:0,y:0}};const pmStage=$('#pm-stage'),pmWorld=$('#pm-world');
+const applyPM=()=>{pmWorld.style.transform=`translate(${PM.pan.x}px,${PM.pan.y}px) scale(${PM.zoom})`;$('#pm-zl').textContent=R(PM.zoom*100)+'%'};
+screens.pmap={enter(){const m=PM.map;$('#pm-name').textContent=m.name;
+  let s=`<div class="mclip" style="width:${m.w}px;height:${m.h}px"><div class="mbg" style="width:${m.w}px;height:${m.h}px;background:${m.bg}"></div>`;
+  m.layers.forEach(l=>{if(!l.visible)return;if(l.type==='paint'){if(l.data)s+=`<img src="${l.data}" alt="" draggable="false" style="position:absolute;left:0;top:0;width:${m.w}px;height:${m.h}px;opacity:${l.opacity};pointer-events:none">`}
+    else s+=`<img class="mimg" src="${PW.assets[l.asset]||''}" alt="" draggable="false" style="${imgCSS(l)};pointer-events:none">`});
+  const g=m.grid;if(g&&g.on)s+=`<div class="mgrid" style="width:${m.w}px;height:${m.h}px;opacity:${g.opacity};background-image:linear-gradient(to right,${g.color} 1px,transparent 1px),linear-gradient(to bottom,${g.color} 1px,transparent 1px);background-size:${g.size}px ${g.size}px"></div>`;
+  pmWorld.innerHTML=s+'</div>';requestAnimationFrame(fitPM)}};
+const fitPM=()=>fitView(PM,pmStage,PM.map.w,PM.map.h,applyPM);
+$('#pm-back').onclick=()=>show('pworld');
+pmStage.addEventListener('pointerdown',e=>{if(!e.target.closest('.hint'))startPan(e,PM,pmStage,applyPM)});
+pmStage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(PM,pmStage,applyPM,e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)))},{passive:false});
+$('#pm-zin').onclick=()=>zoomCenter(PM,pmStage,applyPM,1.25);$('#pm-zout').onclick=()=>zoomCenter(PM,pmStage,applyPM,.8);$('#pm-fit').onclick=fitPM;
+
+/* ================= keyboard ================= */
+document.addEventListener('keydown',e=>{
+  if(e.key===' '&&!typing(e)&&(cur==='card'||cur==='map')&&!e.target.closest('button,select')){e.preventDefault();if(!spaceDown){spaceDown=true;(cur==='card'?cStage:mStage).classList.add('pan')}return}
+  if(typing(e))return;const mod=e.ctrlKey||e.metaKey,k=e.key.toLowerCase();
+  if(cur==='card'){
+    if(mod&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}if(mod&&k==='y'){e.preventDefault();redo();return}
+    const f=CE.sel&&findItem(CE.sel);if(!f)return;
+    if(mod&&k==='d'){e.preventDefault();$('[data-act="dup"]',cProps)?.click();return}
+    if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();$('[data-act="del"]',cProps)?.click();return}
+    const d=e.shiftKey?10:1,mv={ArrowLeft:[-d,0],ArrowRight:[d,0],ArrowUp:[0,-d],ArrowDown:[0,d]}[e.key];
+    if(mv){e.preventDefault();pushHist();f.item.x+=mv[0];f.item.y+=mv[1];renderCard();renderProps();save()}
+    if(e.key==='Escape')selectC(null)}
+  if(cur==='map'){
+    if(mod&&k==='z'){e.preventDefault();e.shiftKey?mRedo():mUndo();return}if(mod&&k==='y'){e.preventDefault();mRedo();return}
+    if(mod)return;
+    if(k==='b')setTool('brush');if(k==='e')setTool('eraser');if(k==='v')setTool('move');if(k==='h')setTool('hand');
+    if(e.key==='[')setSize(ME.size>20?ME.size*.85:ME.size-1);if(e.key===']')setSize(ME.size>20?ME.size*1.15:ME.size+1);
+    if((e.key==='Delete'||e.key==='Backspace')&&ME.sel){e.preventDefault();$('[data-ma="del"]',mPropsB)?.click()}
+    if(e.key==='Escape'&&ME.sel){ME.sel=null;drawMSel();renderLayers();renderMProps()}}});
+document.addEventListener('keyup',e=>{if(e.key===' '){spaceDown=false;cStage.classList.remove('pan');mStage.classList.remove('pan')}});
+window.addEventListener('blur',()=>{spaceDown=false;cStage.classList.remove('pan');mStage.classList.remove('pan')});
+window.addEventListener('beforeunload',()=>{if(ME.map)makeThumb();flush()});
+
+/* ================= boot ================= */
+(async()=>{try{const d=await kv('readonly','db');if(d&&Array.isArray(d.worlds))DB=d}catch(e){setStatus('Browser storage unavailable: export your world to keep it')}
+  try{const d=await kv('readonly','player');if(d&&Array.isArray(d.chars))PDB=d}catch(e){}
+  window.addEventListener('hashchange',route);route()})();
+}
+</script>
+</body>
+</html>
