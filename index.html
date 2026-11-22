@@ -126,6 +126,56 @@ input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
 .rule{border:1px solid var(--line);border-radius:8px;padding:8px;margin:8px 0;background:var(--panel2)}
 .rh{display:flex;gap:6px;align-items:center;margin:2px 0}.rh b{width:36px;flex:none;font-size:12.5px;color:var(--acc)}.rh select{flex:1}
 .rl{display:flex;gap:6px;align-items:center;margin:4px 0 8px 42px}.rl select{flex:1}.rl input{width:70px;flex:none}.rw{font-size:12.5px;color:var(--mute);white-space:nowrap}
+#c-stage .it-box:not(.sel):not(.inl),#c-stage .it-group:not(.sel){outline:calc(1px*var(--iz,1)) dashed rgba(122,90,50,.32);outline-offset:-1px}
+.preview #c-stage .it-box,.preview #c-stage .it-group{outline:none!important}
+.bt{font:700 16px Cinzel,serif;padding:0 6px}
+.modal.wide{width:min(980px,100%)}
+.libwrap{flex:1;display:grid;grid-template-columns:240px minmax(0,1fr) auto;min-height:0}
+.libside{border-right:1px solid var(--line);overflow:auto;padding:10px 8px 20px;background:var(--panel)}
+.libmain{overflow:auto;padding:18px 22px 40px}
+.libdetail{width:min(460px,100vw);border-left:1px solid var(--line);overflow:auto;background:var(--panel);padding:14px 16px 30px}
+.libdetail[hidden]{display:none}
+.lnav{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;padding:7px 8px;border-radius:6px;cursor:pointer;text-align:left;color:var(--ink);font-size:13.5px}
+.lnav:hover{background:var(--panel2)}.lnav.on{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc)}
+.lnav .n{margin-left:auto;font-size:12px;color:var(--mute)}.lnav .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lnav svg{flex:none;opacity:.8}
+.drop-on{outline:2px dashed var(--acc)!important;outline-offset:-2px}
+.lcat{display:flex;align-items:center}.lcat .lnav{flex:1}.lcat .x{opacity:0}.lcat:hover .x,.lcat .x:focus{opacity:1}
+.lhead{font-size:12px;color:var(--mute);margin:16px 8px 4px;display:flex;align-items:center;justify-content:space-between}
+.ltypes{display:flex;flex-wrap:wrap;gap:4px;padding:0 6px}.ltypes .tg{height:28px;font-size:12.5px}
+.lmhead{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px}
+.lmhead h1{font-size:28px;flex:1;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+.lmhead h1 button{font:inherit;background:none;border:0;color:var(--mute);cursor:pointer;padding:0}
+.lmhead h1 button:hover{color:var(--acc)}
+.lsub{font-size:12.5px;color:var(--mute);margin:18px 0 8px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.ltile{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;text-align:left;padding:0;color:var(--ink)}
+.ltile:hover{border-color:color-mix(in srgb,var(--acc) 60%,var(--line))}
+.ltile.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.lthumb{height:128px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:repeating-conic-gradient(#1f1c24 0 25%,#17151b 0 50%) 0 0/16px 16px}
+.lthumb img{max-width:100%;max-height:100%;display:block}
+.lthumb.comp{background:#e9dcc0}
+.lthumb.page{background:var(--panel2);align-items:flex-start;justify-content:flex-start;padding:12px;font-size:12px;color:var(--mute);line-height:1.45}
+.lthumb.folder{background:var(--panel2);color:var(--acc)}
+.lname{padding:8px 10px;font-size:13px;display:flex;gap:6px;align-items:center}.lname span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ltype{font-size:10.5px;color:var(--mute);border:1px solid var(--line);border-radius:10px;padding:0 7px;white-space:nowrap}
+.llist{grid-template-columns:1fr}.llist .ltile{flex-direction:row;align-items:center}.llist .lthumb{width:84px;height:56px;flex:none}.llist .lthumb.page{padding:6px;font-size:10px}
+.dhead{display:flex;gap:6px;align-items:flex-start}.dhead .wname{font-size:24px;flex:1;width:100%}
+.dmeta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px;color:var(--mute);margin:4px 0 12px}
+.dprev{border-radius:10px;display:flex;justify-content:center;align-items:center;overflow:hidden;background:repeating-conic-gradient(#1f1c24 0 25%,#17151b 0 50%) 0 0/16px 16px;margin-bottom:12px;max-height:340px;position:relative}
+.dprev img{max-width:100%;max-height:340px;display:block}
+.dprev.comp{background:#e9dcc0}
+.whead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.wiki{font-size:15px;line-height:1.6}
+.wiki h2{font-size:22px;margin:14px 0 6px}.wiki h3{font-size:17px;margin:12px 0 4px}
+.wiki p{margin:0 0 10px}.wiki ul{margin:0 0 10px;padding-left:20px}
+.wiki img{max-width:100%;border-radius:8px;display:block;margin:6px 0 10px}
+.wl{color:var(--acc);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--acc) 40%,transparent)}
+.wl.new{color:#ff9b85;border-bottom-style:dashed}
+.pick{display:grid;grid-template-columns:190px minmax(0,1fr);gap:14px;min-height:50vh}
+.pick .pside{border-right:1px solid var(--line);padding-right:8px;max-height:60vh;overflow:auto}
+.pick .pgrid{max-height:56vh;overflow:auto;margin-top:10px}
+@media(max-width:900px){.libwrap{grid-template-columns:170px minmax(0,1fr)}.libdetail{position:fixed;right:0;top:0;bottom:0;z-index:40;box-shadow:-20px 0 40px rgba(0,0,0,.5)}.pick{grid-template-columns:1fr}.pick .pside{display:none}}
 /* editor bars */
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);z-index:20;position:relative}
 .bar .title-in{width:220px;font-weight:600;background:transparent;border-color:transparent}
@@ -319,6 +369,37 @@ input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
   </div>
 </section>
 
+<!-- LIBRARY -->
+<section class="screen" id="scr-library" hidden>
+  <header class="bar">
+    <button class="btn ghost sm" data-go="worlds">← Worlds</button>
+    <b class="bt">Library</b>
+    <div class="sp"></div>
+    <input type="text" id="lib-q" placeholder="Search names, tags and pages…" aria-label="Search the library" style="width:260px">
+    <button class="btn sm" id="lib-upload">Upload files</button>
+    <button class="btn sm" id="lib-newpage">New page</button>
+    <button class="btn sm" id="lib-studio">Image Studio</button>
+    <button class="btn sm pri" id="lib-newimg">New image</button>
+    <span class="status"></span>
+  </header>
+  <div class="libwrap"><aside class="libside" id="lib-side"></aside><main class="libmain" id="lib-main"></main><aside class="libdetail" id="lib-detail" hidden></aside></div>
+</section>
+
+<!-- IMAGE STUDIO -->
+<section class="screen" id="scr-studio" hidden>
+  <header class="bar">
+    <button class="btn ghost sm" id="st-back">← Back</button>
+    <b class="bt">Image Studio</b>
+    <span class="muted" style="font-size:12.5px">Ctrl+S saves to the Library</span>
+    <div class="sp"></div>
+    <button class="btn sm" id="st-new">New image</button>
+    <button class="btn sm" id="st-open">Open from Library</button>
+    <button class="btn sm pri" id="st-save">Save to Library</button>
+    <span class="status"></span>
+  </header>
+  <iframe id="st-frame" title="Image Studio" style="flex:1;border:0;width:100%;background:#1e1e1e"></iframe>
+</section>
+
 <!-- WORLDS -->
 <section class="screen scroll-screen" id="scr-worlds" hidden>
   <div class="page">
@@ -326,6 +407,8 @@ input[type=checkbox]{accent-color:var(--acc);width:16px;height:16px}
     <div class="pagehead">
       <h1>Your worlds</h1>
       <span class="status"></span>
+      <button class="btn" data-go="library">Library</button>
+      <button class="btn" id="w-studio">Image Studio</button>
       <button class="btn" id="w-gh">GitHub settings</button>
       <button class="btn" id="w-import">Import world file</button>
       <button class="btn pri" id="w-new">Create world</button>
@@ -422,7 +505,7 @@ function idbOpen(){return new Promise((res,rej)=>{try{const r=indexedDB.open('wo
 async function kv(mode,key,val){idbP=idbP||idbOpen();const db=await idbP;return new Promise((res,rej)=>{const st=db.transaction('kv',mode).objectStore('kv');const rq=mode==='readonly'?st.get(key):st.put(val,key);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error)})}
 const saveHooks=[];let saveT;
 function setStatus(s){$$('.status').forEach(e=>e.textContent=s)}
-function save(){if(W&&writerScreens.includes(cur))W.modified=Date.now();clearTimeout(saveT);setStatus('Saving…');saveT=setTimeout(flush,600)}
+function save(){if(W&&['world','card','map'].includes(cur))W.modified=Date.now();clearTimeout(saveT);setStatus('Saving…');saveT=setTimeout(flush,600)}
 async function flush(){clearTimeout(saveT);saveHooks.forEach(f=>{try{f()}catch(e){}});try{await kv('readwrite','db',DB);setStatus('All changes saved in this browser')}catch(e){setStatus('Browser storage unavailable: export your world to keep it')}}
 
 /* ================= modal ================= */
@@ -493,7 +576,7 @@ const ORN_NAMES={corner:'Corner',divider:'Divider',frame:'Frame',banner:'Banner'
 
 /* ================= model ================= */
 function newWorld(name,desc){return{id:uid(),name,desc,created:Date.now(),templates:[],maps:[],assets:{}}}
-function newBox(label,fs){return{id:uid(),type:'box',kind:'text',label,text:'',showLabel:true,x:0,y:0,w:100,h:40,color:'#2a1d10',labelColor:'#7a5a32',bg:'#ffffff',bgOpacity:.55,borderW:1,borderColor:'#8a6a3e',radius:8,font:'Spectral',size:fs,align:'left',bold:false,italic:false,locked:false}}
+function newBox(label,fs){return{id:uid(),type:'box',kind:'text',label,text:'',showLabel:true,x:0,y:0,w:100,h:40,color:'#2a1d10',labelColor:'#7a5a32',bg:'#ffffff',bgOpacity:0,borderW:0,borderColor:'#8a6a3e',radius:8,font:'Spectral',size:fs,align:'left',bold:false,italic:false,locked:false}}
 function toNumber(b,v){return Object.assign(b,{kind:'number',value:v,bgOpacity:0,borderW:0,min:null,max:null,step:1,showSign:false,style:'number',barColor:'#a8322a',align:'center'})}
 function newNumBox(label,fs){return toNumber(newBox(label,fs),0)}
 function newBtn(label,amount,target,x,y,s){return{id:uid(),type:'btn',label,amount,target,x:R(x),y:R(y),w:s,h:s,rot:0,opacity:1,font:'Inter',size:R(s*.62),color:'#ffffff',bg:'#5a3d1e',bgOpacity:1,borderColor:'#3b2a1a',borderW:0,radius:R(s*.25),bold:true,locked:false,anchor:null}}
@@ -517,7 +600,7 @@ function changeNum(t,acc,id,nv){const seen=new Set();
   go(id,nv)}
 function recalcLinks(t,acc){[...new Set((t.links||[]).filter(l=>l.mode!=='add').map(l=>l.from))].forEach(f=>changeNum(t,acc,f,acc.get(f)))}
 function pressBtn(t,acc,btn){if(!btn.target||!findBoxIn(t,btn.target)){toast('This button is not connected to a number bar yet');return false}changeNum(t,acc,btn.target,acc.get(btn.target)+(+btn.amount||0));return true}
-function newGroup(name,x,y,w,hh,labels,arr,fs){const g={id:uid(),type:'group',name,x:R(x),y:R(y),w:R(w),h:R(hh),rot:0,opacity:1,bg:'#ffffff',bgOpacity:.18,borderW:2,borderColor:'#5a3d1e',radius:14,showTitle:true,titleColor:'#5a3d1e',titleFont:'Cinzel',titleSize:R(fs*.85),boxes:labels.map(l=>newBox(l,fs))};arrange(g,arr);return g}
+function newGroup(name,x,y,w,hh,labels,arr,fs){const g={id:uid(),type:'group',name,x:R(x),y:R(y),w:R(w),h:R(hh),rot:0,opacity:1,bg:'#ffffff',bgOpacity:0,borderW:0,borderColor:'#5a3d1e',radius:14,showTitle:true,titleColor:'#5a3d1e',titleFont:'Cinzel',titleSize:R(fs*.85),boxes:labels.map(l=>newBox(l,fs))};arrange(g,arr);return g}
 function arrange(g,mode){const n=g.boxes.length;if(!n)return;const pad=12,gap=8,top=g.showTitle?R(g.titleSize*1.25+14):pad;
   const cols=mode==='h'?n:mode==='v'?1:Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols);
   const bw=(g.w-2*pad-gap*(cols-1))/cols,bh=(g.h-top-pad-gap*(rows-1))/rows;
@@ -526,9 +609,13 @@ function migrateTpl(t){if(!t||t.v>=2)return;const imgs=new Set(t.items.filter(i=
   t.items.forEach(g=>g.boxes&&g.boxes.forEach(b=>{if(b.kind!=='number')return;
     if(b.bg==='#ffffff'&&(b.bgOpacity===.55||b.bgOpacity===.25)&&(b.borderW===0||(b.borderW===1&&b.borderColor==='#8a6a3e'))){b.bgOpacity=0;b.borderW=0}
     if(g.anchor&&imgs.has(g.anchor)&&b.label==='Number')b.showLabel=false}));t.v=2}
-function migrateWorld(w){(w.templates||[]).forEach(migrateTpl)}
+function migrateTpl3(t){if(!t||t.v>=3)return;
+  t.items.forEach(g=>{if(g.type!=='group')return;
+    if(g.bg==='#ffffff'&&g.bgOpacity===.18&&g.borderW===2&&g.borderColor==='#5a3d1e'){g.bgOpacity=0;g.borderW=0}
+    g.boxes.forEach(b=>{if(b.kind==='number')return;if(b.bg==='#ffffff'&&(b.bgOpacity===.55||b.bgOpacity===.25)&&(b.borderW===0||(b.borderW===1&&b.borderColor==='#8a6a3e'))){b.bgOpacity=0;b.borderW=0}})});t.v=3}
+function migrateWorld(w){(w.templates||[]).forEach(t=>{migrateTpl(t);migrateTpl3(t)})}
 function newTemplate(name,w,hh,starter){const s=Math.min(w,hh);
-  const t={id:uid(),v:2,name,w,h:hh,bg:{color:'#f1e6cc',color2:'#d9c399',grad:true,angle:180,img:null,fit:'cover',imgOpacity:1},
+  const t={id:uid(),v:3,name,w,h:hh,bg:{color:'#f1e6cc',color2:'#d9c399',grad:true,angle:180,img:null,fit:'cover',imgOpacity:1},
     border:{w:R(s*.012),color:'#5a3d1e',r:R(s*.03)},
     layout:{preset:'none',cols:2,rows:3,margin:R(s*.05),gap:R(s*.03),color:'#ffffff',opacity:.3,radius:16,stroke:'#5a3d1e',strokeW:0},items:[]};
   if(starter)starterItems(t);return t}
@@ -655,7 +742,7 @@ const cWins=[
   makeWin($('#c-wins'),'c-text','Text and numbers',{x:()=>Math.max(300,innerWidth-332),y:()=>112,w:320,maxh:'calc(100vh - 180px)'},cText)];
 $('#c-resetw').onclick=()=>cWins.forEach(w=>w._reset());
 const baseFs=()=>R(clamp(Math.min(CE.tpl.w,CE.tpl.h)*.028,14,40));
-function openCard(t){migrateTpl(t);t.links=t.links||[];CE.tpl=t;CE.sel=null;CE.hist=[];CE.fut=[];CE.editing=null;CE.preview=false;CE.pv=null;
+function openCard(t){migrateTpl(t);migrateTpl3(t);t.links=t.links||[];CE.tpl=t;CE.sel=null;CE.hist=[];CE.fut=[];CE.editing=null;CE.preview=false;CE.pv=null;
   $('#scr-card').classList.remove('preview');$('#c-prev').classList.remove('on');CE.td.size=R(clamp(Math.min(t.w,t.h)*.035,14,72));show('card')}
 screens.card={enter(){$('#c-name').value=CE.tpl.name;setCTool(CE.tool);renderTools();renderCard();renderProps();renderText();renderOpts();requestAnimationFrame(fitCard)},leave(){commitInline();flush()}};
 $('#c-back').onclick=()=>show('world');
@@ -783,18 +870,20 @@ function renderOpts(){if(!CE.tpl)return;const f=CE.sel&&findItem(CE.sel),it=f&&f
     ${it&&it.type==='btn'?'':`<label class="tg${tg.italic?' on':''}" title="Italic"><input type="checkbox" data-k="italic"${tg.italic?' checked':''} hidden><i style="font-family:Georgia,serif">I</i></label>
     <span class="seg">${['left','center','right'].map(a=>`<button class="tg${tg.align===a?' on':''}" data-align="${a}" title="Align ${a}">${alignIcon(a)}</button>`).join('')}</span>`}`}
   else if(it)s+=`<span class="optl">${esc(it.type==='group'?it.name:it.type==='image'?(it.name||'Image'):ORN_NAMES[it.orn]||(it.type==='shape'?'Shape':'Item'))}</span>`;
-  if(it)s+=`<span class="sp"></span><span class="muted lk">${it.locked?(it.anchor?'Locked to “'+esc(hostName(it.anchor))+'”':'Locked in place'):(f.parent?'':'Lock pins it. On an image or group, it moves with it.')}</span><button class="btn sm${it.locked?' on':''}" data-lock>${it.locked?'Unlock':'Lock'}</button>`;
+  if(it)s+=`<span class="sp"></span><span class="muted lk">${it.locked?(it.anchor?'Locked to “'+esc(hostName(it.anchor))+'”':'Locked in place'):(f.parent?'':'Lock pins it. On an image or group, it moves with it.')}</span><button class="btn sm" data-tolib title="Keep a copy in the library to reuse on other cards">Save to library</button><button class="btn sm${it.locked?' on':''}" data-lock>${it.locked?'Unlock':'Lock'}</button>`;
   if(!s)s=`<span class="muted">${CE.tool==='text'?'Click the card to type, or drag to draw a text box.':'Select something to edit it, or press T and click the card to add text.'}</span>`;
   cOpts.innerHTML=s}
 bindForm(cOpts,optTarget,(t,k)=>{const tg=optTarget();if(tg!==CE.td){if(tg.type==='text')CE.td[k]=tg[k];renderCard();renderProps();save()}if(t.type==='checkbox')renderOpts()},pushHist);
 cOpts.addEventListener('pointerdown',e=>{if(e.target.closest('label.tg,[data-align]'))pushHist()});
 cOpts.addEventListener('click',e=>{const a=e.target.closest('[data-align]');if(a){const tg=optTarget();if(!tg)return;tg.align=a.dataset.align;if(tg!==CE.td){if(tg.type==='text')CE.td.align=tg.align;renderCard();renderProps();save()}renderOpts();return}
+  if(e.target.closest('[data-tolib]')){saveSelToLib();return}
   if(e.target.closest('[data-lock]'))toggleLock()});
 
 /* --- card tools window --- */
 let ornColor='#8a6a3e';
 function renderTools(){const t=CE.tpl,L=t.layout,b=t.bg;
   cTools.innerHTML=`
+  <div class="sec"><h4>Library</h4><div class="btns"><button class="btn sm pri" data-act="libins">Insert from library</button><button class="btn sm" data-act="libopen">Open Library</button></div><p class="tip" style="margin:0">To reuse something, select it and click “Save to library” in the bar above.</p></div>
   <div class="sec"><h4>Text and numbers</h4><div class="btns"><button class="btn sm pri" data-act="ttool">Text tool (T)</button><button class="btn sm" data-act="group">Text group</button><button class="btn sm" data-act="box">Text box</button><button class="btn sm" data-act="num">Number bar</button><button class="btn sm" data-act="pm">+ / − button</button><button class="btn sm" data-act="rules">Connections</button></div>
     <p class="tip">Boxes and number bars go into the selected group, or a new one. To put text on a picture, select the picture first.</p></div>
   <div class="sec"><h4>Images and decorations</h4>
@@ -821,6 +910,8 @@ cTools.addEventListener('input',e=>{if(e.target.id==='c-snap')CE.snap=e.target.c
 cTools.addEventListener('click',e=>{const a=e.target.closest('[data-act],[data-orn]');if(!a)return;commitInline();const t=CE.tpl,c=viewCenterCard(),s=Math.min(t.w,t.h),fs=baseFs();
   if(a.dataset.orn){const k=a.dataset.orn,wide=['divider','banner'].includes(k),w=R(wide?s*.6:s*.2),hh=R(wide?(k==='divider'?s*.04:s*.14):s*.2);addItem({id:uid(),type:'orn',orn:k,color:ornColor,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1});return}
   switch(a.dataset.act){
+    case 'libins':cardFromLibrary();break;
+    case 'libopen':show('library');break;
     case 'rules':CE.tab='rules';renderText();cWins[2].classList.remove('min');cWins[2].style.zIndex=++zTop;break;
     case 'ttool':setCTool('text');toast('Text tool: click the card to type, or drag to draw a text box');break;
     case 'bgimg':pickFiles('image/*',false,fs2=>readImages(fs2,src=>{pushHist();const id='a'+uid();W.assets[id]=src;t.bg.img=id;save();renderTools();renderCard()}));break;
@@ -928,7 +1019,7 @@ cProps.addEventListener('click',e=>{
     case 'addlink':newRule(it.id);break;
     case 'pmbtns':{const g=f.parent,bs=R(clamp(it.h*.5,22,90)),gp=R(bs*.2);let x=g.x+it.x+it.w+gp;const y=g.y+it.y+(it.h-bs)/2;if(x+2*bs+gp>CE.tpl.w)x=g.x+it.x+it.w-2*bs-gp*2;
       const st=+it.step||1,mi=newBtn('−',-st,it.id,x,y,bs),pl=newBtn('+',st,it.id,x+bs+gp,y,bs);attachTo(mi,g);attachTo(pl,g);CE.tpl.items.push(mi,pl);CE.sel=pl.id;toast('Buttons added and locked to the group');break}
-    case 'img-group':{const g=frameless(newGroup('Text group',it.x+it.w*.15,it.y+it.h*.3,it.w*.7,it.h*.4,['Field 1','Field 2'],'v',fs));arrange(g,'v');g.boxes.forEach(b=>{b.bgOpacity=.25;b.borderW=0});attachTo(g,it);CE.tpl.items.push(g);CE.sel=g.id;break}
+    case 'img-group':{const g=frameless(newGroup('Text group',it.x+it.w*.15,it.y+it.h*.3,it.w*.7,it.h*.4,['Field 1','Field 2'],'v',fs));arrange(g,'v');attachTo(g,it);CE.tpl.items.push(g);CE.sel=g.id;break}
     case 'img-text':{const tx=newText('Text',it.x+it.w*.1,it.y+it.h*.45);tx.text='Text';attachTo(tx,it);CE.tpl.items.push(tx);CE.sel=tx.id;break}
     case 'img-num':{const w=R(fs*5),hh=R(fs*3.6),g=frameless(newGroup('Number',it.x+it.w/2-w/2,it.y+it.h/2-hh/2,w,hh,[],'v',fs)),b=newNumBox('Number',fs);Object.assign(b,{x:0,y:0,w,h:hh,showLabel:false});g.boxes.push(b);attachTo(g,it);CE.tpl.items.push(g);CE.sel=b.id;break}
   }recalcLinks(CE.tpl,tplAcc(CE.tpl));save();renderCard();renderProps();renderText();renderOpts()});
@@ -1068,16 +1159,17 @@ function renderMTools(){mToolsB.innerHTML=`<div class="sec"><div class="tools4">
   <label class="f"><span>Softness</span><input type="range" id="mb-soft" min="0" max="100" value="${R(ME.soft*100)}"></label>
   <label class="f"><span>Smoothing</span><input type="range" id="mb-sm" min="0" max="90" value="${R(ME.smooth*100)}"></label>
   <p class="tip">Pen tablets use pressure for size. Shift-click to draw a straight line from your last stroke.</p></div>
-  <div class="sec"><div class="btns"><button class="btn sm pri" data-act="addimg">Add PNG to map</button></div></div>`;
+  <div class="sec"><div class="btns"><button class="btn sm pri" data-act="addimg">Add PNG to map</button><button class="btn sm" data-act="libimg">From library</button></div></div>`;
   setTool(ME.tool)}
 mToolsB.addEventListener('click',e=>{const t=e.target.closest('[data-tool]');if(t)setTool(t.dataset.tool);const s=e.target.closest('[data-sw]');if(s){ME.color=s.dataset.sw;$('#mb-color',mToolsB).value=ME.color;if(ME.tool!=='brush')setTool('brush')}
-  if(e.target.closest('[data-act="addimg"]'))pickFiles('image/png,image/*',true,fs=>addMapImages(fs))});
+  if(e.target.closest('[data-act="addimg"]'))pickFiles('image/png,image/*',true,fs=>addMapImages(fs));
+  if(e.target.closest('[data-act="libimg"]'))mapFromLibrary()});
 mToolsB.addEventListener('input',e=>{const t=e.target;if(t.id==='mb-color')ME.color=t.value;if(t.id==='mb-size'){ME.size=+t.value;$('#mb-sv').textContent=ME.size}
   if(t.id==='mb-op'){ME.opacity=t.value/100;$('#mb-ov').textContent=t.value+'%'}if(t.id==='mb-soft')ME.soft=t.value/100;if(t.id==='mb-sm')ME.smooth=t.value/100});
 function setSize(v){ME.size=clamp(R(v),1,300);const s=$('#mb-size',mToolsB);if(s){s.value=ME.size;$('#mb-sv').textContent=ME.size}mCur.style.width=mCur.style.height=Math.max(4,ME.size*ME.zoom)+'px'}
 /* layers window */
 function renderLayers(){const m=ME.map,act=m.layers.find(l=>l.id===(ME.sel||ME.active));
-  mLayersB.innerHTML=`<div class="btns" style="margin-top:8px"><button class="btn sm" data-la="addpaint">+ Paint layer</button><button class="btn sm" data-la="addimg">+ PNG image</button></div>`+
+  mLayersB.innerHTML=`<div class="btns" style="margin-top:8px"><button class="btn sm" data-la="addpaint">+ Paint layer</button><button class="btn sm" data-la="addimg">+ PNG image</button><button class="btn sm" data-la="libimg">+ From library</button></div>`+
   [...m.layers].reverse().map(l=>`<div class="ly${(l.type==='paint'?l.id===ME.active&&!ME.sel:l.id===ME.sel)?' on':''}" data-lid="${l.id}">
     <button class="x${l.visible?'':' off'}" data-la="eye" title="${l.visible?'Hide':'Show'}">${l.visible?'●':'○'}</button>
     <span class="lt">${l.type==='image'?`<img src="${W.assets[l.asset]||''}" alt="">`:'paint'}</span>
@@ -1087,6 +1179,7 @@ function renderLayers(){const m=ME.map,act=m.layers.find(l=>l.id===(ME.sel||ME.a
 mLayersB.addEventListener('click',e=>{const row=e.target.closest('[data-lid]'),b=e.target.closest('[data-la]');const m=ME.map;
   if(b&&b.dataset.la==='addpaint'){pushMState();const l={id:uid(),type:'paint',name:'Layer '+(m.layers.filter(x=>x.type==='paint').length+1),visible:true,opacity:1,data:null};const ai=m.layers.findIndex(x=>x.id===ME.active);m.layers.splice(ai+1,0,l);ME.active=l.id;ME.sel=null;setTool('brush');afterM();return}
   if(b&&b.dataset.la==='addimg'){pickFiles('image/png,image/*',true,fs=>addMapImages(fs));return}
+  if(b&&b.dataset.la==='libimg'){mapFromLibrary();return}
   if(b&&b.dataset.la==='clear'){const l=m.layers.find(x=>x.id===ME.active);if(!l)return;const c=ME.canv.get(l.id),x=c.getContext('2d');ME.hist.push({k:'paint',id:l.id,x:0,y:0,before:x.getImageData(0,0,c.width,c.height),after:new ImageData(c.width,c.height)});ME.fut=[];x.clearRect(0,0,c.width,c.height);ME.dirty.add(l.id);updMUndo();save();return}
   if(!row)return;const l=m.layers.find(x=>x.id===row.dataset.lid),i=m.layers.indexOf(l);
   if(b){pushMState();const a=b.dataset.la;
@@ -1106,16 +1199,18 @@ mLayersB.addEventListener('input',e=>{const m=ME.map;if(e.target.matches('[data-
 /* map + image props window */
 function renderMProps(){const m=ME.map,l=ME.sel&&m.layers.find(x=>x.id===ME.sel);
   mPropsB.innerHTML=(l?`<div class="sec"><h4>Selected image</h4><div class="r4">${F.num('x','X',l.x)}${F.num('y','Y',l.y)}${F.num('w','W',l.w)}${F.num('h','H',l.h)}</div>${F.range('rot','Rotation',l.rot||0,-180,180,1)}${F.chk('flipX','Flip',l.flipX)}
-    <div class="btns"><button class="btn sm" data-ma="ratio">Original ratio</button><button class="btn sm" data-ma="dup">Duplicate</button><button class="btn sm ghost" data-ma="del">Delete</button></div><p class="tip">Corner handle keeps the ratio; hold Shift to stretch.</p></div>`:'')+
+    <div class="btns"><button class="btn sm" data-ma="ratio">Original ratio</button><button class="btn sm" data-ma="dup">Duplicate</button><button class="btn sm" data-ma="tolib">Save to library</button><button class="btn sm ghost" data-ma="del">Delete</button></div><p class="tip">Corner handle keeps the ratio; hold Shift to stretch.</p></div>`:'')+
   `<div class="sec"><h4>Map</h4>${F.color('bg','Paper colour',m.bg)}
     <div class="r2"><label class="m"><span>Width</span><input type="number" id="mp-w" value="${m.w}"></label><label class="m"><span>Height</span><input type="number" id="mp-h" value="${m.h}"></label></div>
-    <div class="btns"><button class="btn sm" data-ma="resize">Apply canvas size</button></div>
+    <div class="btns"><button class="btn sm" data-ma="resize">Apply canvas size</button><button class="btn sm" data-ma="maplib">Save map as image to library</button></div>
     ${F.chk('grid.on','Square grid',m.grid.on)}${m.grid.on?`${F.numf('grid.size','Cell size (px)',m.grid.size)}${F.color('grid.color','Grid colour',m.grid.color)}${F.range('grid.opacity','Grid opacity',m.grid.opacity,0,1,.05)}`:''}</div>`}
 mPropsB.addEventListener('focusin',e=>{if(e.target.matches('[data-k]'))pushMState()});
 mPropsB.addEventListener('pointerdown',e=>{if(e.target.matches('[data-k]'))pushMState()});
 mPropsB.addEventListener('input',e=>{const t=e.target,k=t.dataset.k;if(!k)return;let v=t.type==='checkbox'?t.checked:(t.type==='number'||t.type==='range')?parseFloat(t.value):t.value;if(typeof v==='number'&&isNaN(v))return;
   const isMap=k==='bg'||k.startsWith('grid.');const o=isMap?ME.map:ME.map.layers.find(x=>x.id===ME.sel);if(!o)return;if(k==='grid.size')v=Math.max(4,v);setPath(o,k,v);renderMap();save();if(k==='grid.on')renderMProps()});
 mPropsB.addEventListener('click',e=>{const a=e.target.closest('[data-ma]');if(!a)return;const m=ME.map,l=m.layers.find(x=>x.id===ME.sel);
+  if(a.dataset.ma==='maplib'){let url;try{url=mapFlatten().toDataURL('image/png')}catch(err){toast('Could not save the map image');return}libSaveImage(url,m.name);return}
+  if(a.dataset.ma==='tolib'&&l){libSaveImage(W.assets[l.asset],l.name||'Image');return}
   if(a.dataset.ma==='resize'){const w=clamp(+$('#mp-w',mPropsB).value||m.w,200,6000),hh=clamp(+$('#mp-h',mPropsB).value||m.h,200,6000);if(w===m.w&&hh===m.h)return;
     m.layers.forEach(x=>{if(x.type!=='paint')return;const o=ensureCanvas(x),n=document.createElement('canvas');n.width=w;n.height=hh;n.getContext('2d').drawImage(o,0,0);ME.canv.set(x.id,n);ME.dirty.add(x.id)});
     m.w=w;m.h=hh;ME.sc.width=w;ME.sc.height=hh;ME.hist=ME.hist.filter(x=>x.k==='state');ME.fut=[];afterM();fitMap();toast('Canvas resized; content kept at top-left');return}
@@ -1128,8 +1223,203 @@ function makeThumb(){const m=ME.map;if(!m)return;try{const s=Math.min(1,360/m.w)
   m.layers.forEach(l=>{if(!l.visible)return;x.globalAlpha=l.opacity;if(l.type==='paint')x.drawImage(ME.canv.get(l.id),0,0,c.width,c.height);else{const im=$(`.mimg[data-id="${l.id}"]`,mWorld);if(im&&im.complete&&im.naturalWidth){x.save();x.translate((l.x+l.w/2)*s,(l.y+l.h/2)*s);x.rotate((l.rot||0)*Math.PI/180);if(l.flipX)x.scale(-1,1);x.drawImage(im,-l.w/2*s,-l.h/2*s,l.w*s,l.h*s);x.restore()}}});
   m.thumb=c.toDataURL('image/jpeg',.82)}catch(e){}}
 
+/* ================= LIBRARY ================= */
+const LIB=()=>(DB.library=DB.library||{cats:[],items:[]});
+const LB={cat:'all',type:'all',q:'',sel:null,view:LS.get('lib-view','grid'),edit:false};
+const TYPE_NAMES={image:'Image',component:'Saved boxes',page:'Page'};
+const FOLDER=`<svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 15 4.3v7.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 11.5z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>`;
+const byName=(a,b)=>String(a.name).localeCompare(String(b.name));
+const realCat=()=>LIB().cats.some(c=>c.id===LB.cat)?LB.cat:null;
+function catPath(id){const L=LIB(),o=[];let c=L.cats.find(x=>x.id===id),d=0;while(c&&d++<30){o.unshift(c);const p=c.parent;c=L.cats.find(x=>x.id===p)}return o}
+function catOptions(){const L=LIB(),out=[['','No category']];const walk=(p,d)=>L.cats.filter(c=>(c.parent||null)===p).sort(byName).forEach(c=>{out.push([c.id,' '.repeat(d)+c.name]);walk(c.id,d+1)});walk(null,0);return out}
+const catSelect=(sel,attr)=>`<select ${attr}>${catOptions().map(([v,n])=>`<option value="${v}"${v===(sel||'')?' selected':''}>${esc(n)}</option>`).join('')}</select>`;
+function compHTML(p){syncAll({items:p.items});return `<div style="position:relative;width:${p.w}px;height:${p.h}px">${p.items.map(i=>itemHTML({assets:p.assets||{}},i)).join('')}</div>`}
+function scaledComp(p,bw,bh){const s=Math.min(1,bw/p.w,bh/p.h);return `<div class="tscale" style="width:${p.w}px;height:${p.h}px;transform:scale(${s});left:calc(50% - ${p.w*s/2}px);top:calc(50% - ${p.h*s/2}px)">${compHTML(p)}</div>`}
+const plain=t=>String(t||'').replace(/!?\[\[(.+?)\]\]/g,'$1').replace(/[#*]/g,'').trim();
+function itemThumb(it){if(it.type==='image')return `<div class="lthumb"><img src="${it.data}" alt="" loading="lazy"></div>`;
+  if(it.type==='component')return `<div class="lthumb comp">${scaledComp(it.payload,150,110)}</div>`;
+  return `<div class="lthumb page">${esc(plain(it.notes).slice(0,180))||'Empty page'}</div>`}
+function tileHTML(it,on){return `<button class="ltile${on?' on':''}" data-item="${it.id}" draggable="true">${itemThumb(it)}<div class="lname"><span>${esc(it.name)}</span><span class="ltype">${TYPE_NAMES[it.type]}</span></div></button>`}
+function findLibByName(n){n=String(n).trim().toLowerCase();return LIB().items.find(x=>x.name.trim().toLowerCase()===n)}
+function wikiHTML(src){const lines=String(src||'').split('\n');let out='',ul=false,para=[];
+  const inl=t=>{let h=esc(t);h=h.replace(/!\[\[(.+?)\]\]/g,(m,n)=>{const it=LIB().items.find(x=>esc(x.name).toLowerCase()===n.trim().toLowerCase());return it&&it.type==='image'?`<img src="${it.data}" alt="${esc(it.name)}">`:`<a href="#" class="wl new" data-create="${n}">${n}</a>`});
+    h=h.replace(/\[\[(.+?)\]\]/g,(m,n)=>{const it=LIB().items.find(x=>esc(x.name).toLowerCase()===n.trim().toLowerCase());return it?`<a href="#" class="wl" data-open="${it.id}">${n}</a>`:`<a href="#" class="wl new" data-create="${n}" title="No entry yet: click to create it">${n}</a>`});
+    return h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*([^*]+)\*/g,'$1<i>$2</i>')};
+  const flushP=()=>{if(para.length){out+=`<p>${para.map(inl).join('<br>')}</p>`;para=[]}};
+  lines.forEach(l=>{const t=l.trimEnd();
+    if(/^- /.test(t)){flushP();if(!ul){out+='<ul>';ul=true}out+=`<li>${inl(t.slice(2))}</li>`;return}
+    if(ul){out+='</ul>';ul=false}
+    if(/^## /.test(t)){flushP();out+=`<h3>${inl(t.slice(3))}</h3>`}else if(/^# /.test(t)){flushP();out+=`<h2>${inl(t.slice(2))}</h2>`}
+    else if(!t.trim())flushP();else para.push(t)});
+  flushP();if(ul)out+='</ul>';return out}
+function backlinks(it){const n=it.name.trim().toLowerCase();if(!n)return[];return LIB().items.filter(x=>x!==it&&(x.notes||'').toLowerCase().includes('[['+n+']]'))}
+const when=t=>t?new Date(t).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}):'';
+function libList(){const L=LIB(),q=LB.q.trim().toLowerCase();let a;
+  if(q)a=L.items.filter(i=>(i.name+' '+(i.tags||[]).join(' ')+' '+(i.notes||'')).toLowerCase().includes(q));
+  else if(LB.cat==='recent')a=[...L.items].sort((x,y)=>(y.updated||0)-(x.updated||0)).slice(0,40);
+  else if(LB.cat==='all')a=[...L.items];
+  else a=L.items.filter(i=>(i.cat||null)===(LB.cat==='none'?null:LB.cat));
+  if(LB.type!=='all')a=a.filter(i=>i.type===LB.type);
+  return LB.cat==='recent'&&!q?a:a.sort(byName)}
+screens.library={enter(){renderLibrary()}};
+function renderLibrary(){renderLibSide();renderLibMain();renderLibDetail()}
+function renderLibSide(){const L=LIB(),cnt=c=>L.items.filter(i=>(i.cat||null)===c).length;
+  const nav=(k,label,n,drop)=>`<button class="lnav${LB.cat===k&&!LB.q?' on':''}" data-cat="${k}"${drop?` data-drop="${drop}"`:''}>${label}<span class="n">${n??''}</span></button>`;
+  const tree=(p,d)=>L.cats.filter(c=>(c.parent||null)===p).sort(byName).map(c=>`<div class="lcat" style="padding-left:${d*14}px"><button class="lnav${LB.cat===c.id&&!LB.q?' on':''}" data-cat="${c.id}" data-drop="${c.id}">${FOLDER}<span class="cn">${esc(c.name)}</span><span class="n">${cnt(c.id)}</span></button><button class="x" data-catmenu="${c.id}" title="Rename, add a subcategory or delete" aria-label="Options for ${esc(c.name)}">⋯</button></div>${tree(c.id,d+1)}`).join('');
+  $('#lib-side').innerHTML=nav('all','All files',L.items.length)+nav('recent','Recently changed')+nav('none','Not in a category',cnt(null),'none')+
+   `<div class="lhead">Show</div><div class="ltypes">${[['all','All'],['image','Images'],['component','Saved boxes'],['page','Pages']].map(([k,n])=>`<button class="tg${LB.type===k?' on':''}" data-type="${k}">${n}</button>`).join('')}</div>
+    <div class="lhead">Categories<button class="x" data-newcat="" title="New category" aria-label="New category">+</button></div>${tree(null,0)||'<p class="tip" style="margin:4px 8px">No categories yet. Click + to add one, like Characters, Monsters or Maps.</p>'}
+    <div class="lhead">Backup</div><div class="btns" style="padding:0 6px"><button class="btn sm" data-libbak>Download backup</button><button class="btn sm ghost" data-librest>Restore</button></div><p class="tip" style="margin:4px 8px">The library is saved in this browser only. Keep a backup.</p>`}
+function renderLibMain(){const L=LIB(),items=libList(),cat=L.cats.find(c=>c.id===LB.cat);
+  const title=LB.q?`Results for “${esc(LB.q)}”`:cat?catPath(cat.id).map((c,i,a)=>i<a.length-1?`<button data-cat="${c.id}">${esc(c.name)}</button><span class="muted">/</span>`:esc(c.name)).join(''):{all:'All files',recent:'Recently changed',none:'Not in a category'}[LB.cat];
+  const subs=LB.q?[]:cat?L.cats.filter(c=>c.parent===cat.id).sort(byName):LB.cat==='all'?L.cats.filter(c=>!c.parent).sort(byName):[];
+  const count=c=>L.items.filter(i=>i.cat===c.id).length+L.cats.filter(x=>x.parent===c.id).length;
+  $('#lib-main').innerHTML=`<div class="lmhead"><h1>${title}</h1>${cat?`<button class="btn sm" data-newcat="${cat.id}">New subcategory</button>`:''}<span class="seg"><button class="tg${LB.view==='grid'?' on':''}" data-view="grid">Grid</button><button class="tg${LB.view==='list'?' on':''}" data-view="list">List</button></span></div>
+   ${subs.length?`<div class="lsub">Categories</div><div class="lgrid${LB.view==='list'?' llist':''}">${subs.map(c=>`<button class="ltile" data-cat="${c.id}" data-drop="${c.id}"><div class="lthumb folder"><svg width="54" height="46" viewBox="0 0 16 14" aria-hidden="true"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 15 4.3v7.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 11.5z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width=".6"/></svg></div><div class="lname"><span>${esc(c.name)}</span><span class="ltype">${count(c)}</span></div></button>`).join('')}</div>`:''}
+   ${subs.length&&items.length?'<div class="lsub">Files</div>':''}
+   ${items.length?`<div class="lgrid${LB.view==='list'?' llist':''}">${items.map(it=>tileHTML(it,it.id===LB.sel)).join('')}</div>`
+    :subs.length?'':`<div class="empty"><h3 style="margin-bottom:8px">${LB.q?'Nothing matches that search':'Nothing here yet'}</h3>${LB.q?'Try another word.':'Upload images, write a page, make an image in the Image Studio, or save boxes from a card template with “Save to library”.'}</div>`}`}
+function renderLibDetail(){const it=LIB().items.find(i=>i.id===LB.sel),D=$('#lib-detail');if(!it){D.hidden=true;D.innerHTML='';return}D.hidden=false;const bl=backlinks(it);
+  const acts=it.type==='image'?`<button class="btn sm pri" data-lact="studio">Edit in Image Studio</button><button class="btn sm" data-lact="download">Download</button>`:it.type==='component'?'<p class="tip" style="margin:0 0 6px;width:100%">To use these boxes, open a card template and click “Insert from library”.</p>':'';
+  D.innerHTML=`<div class="dhead"><input class="wname" data-f="name" value="${esc(it.name)}" aria-label="Name"><button class="x" data-close title="Close" aria-label="Close">×</button></div>
+   <div class="dmeta"><span class="ltype">${TYPE_NAMES[it.type]}</span>${it.type==='image'?`<span>${it.w||'?'} × ${it.h||'?'} px</span>${it.project?'<span>Layers kept</span>':''}`:''}<span>Changed ${when(it.updated)}</span></div>
+   ${it.type==='image'?`<div class="dprev"><img src="${it.data}" alt=""></div>`:it.type==='component'?`<div class="dprev comp" style="height:${Math.min(300,it.payload.h+20)}px">${scaledComp(it.payload,400,280)}</div>`:''}
+   <div class="r2"><label class="m"><span>Category</span>${catSelect(it.cat,'data-f="cat"')}</label><label class="m"><span>Tags, separated by commas</span><input type="text" data-f="tags" value="${esc((it.tags||[]).join(', '))}"></label></div>
+   <div class="btns" style="margin-top:10px">${acts}<button class="btn sm" data-lact="dup">Duplicate</button><button class="btn sm ghost" data-lact="del">Delete</button></div>
+   <div class="sec"><div class="whead"><h4 style="margin:0">${it.type==='page'?'Page':'Notes'}</h4><span class="seg"><button class="tg${!LB.edit?' on':''}" data-wmode="read">Read</button><button class="tg${LB.edit?' on':''}" data-wmode="edit">Edit</button></span></div>
+    ${LB.edit?`<textarea data-f="notes" rows="16" placeholder="Write here.\n# Heading\n**bold**, *italic*\n- list item\n[[Another entry]] links to it\n![[Image name]] shows an image">${esc(it.notes||'')}</textarea><p class="tip"># heading · **bold** · *italic* · - list · [[Name]] links to another entry · ![[Name]] shows an image</p>`
+     :`<div class="wiki">${wikiHTML(it.notes)||`<p class="muted">Nothing written yet. Click Edit to add ${it.type==='page'?'this page':'notes'}.</p>`}</div>`}</div>
+   ${bl.length?`<div class="sec"><h4>Linked from</h4><p>${bl.map(b=>`<a href="#" class="wl" data-open="${b.id}">${esc(b.name)}</a>`).join(' · ')}</p></div>`:''}`}
+function openLibItem(id,edit){LB.sel=id;LB.edit=!!edit;renderLibMain();renderLibDetail()}
+function newLibItem(o){const it=Object.assign({id:uid(),cat:realCat(),tags:[],notes:'',created:Date.now(),updated:Date.now()},o);LIB().items.push(it);save();return it}
+function libUpload(files,cat){let n=0;readImages(files,(src,w,hh,name)=>{newLibItem({type:'image',name,data:src,w,h:hh,cat:cat===undefined?realCat():cat});n++;if(cur==='library'){renderLibSide();renderLibMain()}toast(`Added ${n} image${n==1?'':'s'} to the library`)})}
+function catDialog(parent,cat){const L=LIB();
+  if(cat){modal('Category',`<label class="lbl">Name</label><input type="text" id="cd-name" value="${esc(cat.name)}">`,[
+    {label:'Delete category',cls:'ghost',act:()=>{confirmBox('Delete category?',`“${cat.name}” will be removed. Its files and subcategories move up one level; nothing is deleted.`,'Delete category',()=>{L.items.forEach(i=>{if(i.cat===cat.id)i.cat=cat.parent||null});L.cats.forEach(c=>{if(c.parent===cat.id)c.parent=cat.parent||null});L.cats=L.cats.filter(c=>c!==cat);if(LB.cat===cat.id)LB.cat=cat.parent||'all';save();renderLibrary()})}},
+    {label:'New subcategory',act:()=>{setTimeout(()=>catDialog(cat.id),0)}},{label:'Cancel'},
+    {label:'Save',cls:'pri',act:m=>{const n=$('#cd-name',m).value.trim();if(!n)return false;cat.name=n;save();renderLibrary()}}]);return}
+  modal(parent?'New subcategory':'New category',`<label class="lbl">Name</label><input type="text" id="cd-name" placeholder="For example Monsters, Items, Maps"><label class="lbl">Inside</label>${catSelect(parent,'id="cd-parent"')}`,[{label:'Cancel'},
+    {label:'Create',cls:'pri',act:m=>{const n=$('#cd-name',m).value.trim();if(!n)return false;const c={id:uid(),name:n,parent:$('#cd-parent',m).value||null};L.cats.push(c);LB.cat=c.id;LB.q='';$('#lib-q').value='';save();renderLibrary()}}])}
+function downloadDataURL(name,url){const fn=name.replace(/[^\w\- ]+/g,'')+'.png';const dl=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
+  dl.then(d=>{if(d)return fetch(url).then(r=>r.blob()).then(b=>d.save({filename:fn,data:b})).then(()=>toast('Saved '+fn),()=>toast('Download cancelled'));const a=document.createElement('a');a.href=url;a.download=fn;document.body.append(a);a.click();a.remove()}).catch(()=>toast('Download blocked'))}
+$('#lib-side').addEventListener('click',e=>{const t=e.target;
+  if(t.closest('[data-libbak]')){flush();downloadText('worldforge-library.json',JSON.stringify({app:'worldforge-library',v:1,...LIB()}));return}
+  if(t.closest('[data-librest]')){pickFiles('.json,application/json',false,fs=>{const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!Array.isArray(j.items))throw 0;const L=LIB();let n=0;
+    (j.cats||[]).forEach(c=>{if(!L.cats.some(x=>x.id===c.id))L.cats.push(c)});j.items.forEach(i=>{if(L.items.some(x=>x.id===i.id))return;L.items.push(i);n++});save();renderLibrary();toast(`Restored ${n} file${n==1?'':'s'}`)}catch(err){toast('That is not a Worldforge library backup')}};r.readAsText(fs[0])});return}
+  const cm=t.closest('[data-catmenu]');if(cm){catDialog(null,LIB().cats.find(c=>c.id===cm.dataset.catmenu));return}
+  const nc=t.closest('[data-newcat]');if(nc){catDialog(nc.dataset.newcat||null);return}
+  const ty=t.closest('[data-type]');if(ty){LB.type=ty.dataset.type;renderLibSide();renderLibMain();return}
+  const c=t.closest('[data-cat]');if(c){LB.cat=c.dataset.cat;LB.q='';$('#lib-q').value='';renderLibSide();renderLibMain()}});
+$('#lib-main').addEventListener('click',e=>{const t=e.target;
+  const v=t.closest('[data-view]');if(v){LB.view=v.dataset.view;LS.set('lib-view',LB.view);renderLibMain();return}
+  const nc=t.closest('[data-newcat]');if(nc){catDialog(nc.dataset.newcat);return}
+  const c=t.closest('[data-cat]');if(c){LB.cat=c.dataset.cat;LB.q='';$('#lib-q').value='';renderLibSide();renderLibMain();return}
+  const it=t.closest('[data-item]');if(it)openLibItem(it.dataset.item,false)});
+$('#lib-q').addEventListener('input',e=>{LB.q=e.target.value;renderLibSide();renderLibMain()});
+$('#lib-upload').onclick=()=>pickFiles('image/*',true,fs=>libUpload(fs));
+$('#lib-newpage').onclick=()=>modal('New page',`<label class="lbl">Title</label><input type="text" id="np-name" placeholder="For example The Ashen Order"><label class="lbl">Category</label>${catSelect(realCat(),'id="np-cat"')}`,[{label:'Cancel'},
+  {label:'Create page',cls:'pri',act:m=>{const n=$('#np-name',m).value.trim();if(!n)return false;const it=newLibItem({type:'page',name:n,cat:$('#np-cat',m).value||null});renderLibSide();renderLibMain();openLibItem(it.id,true)}}]);
+/* drag files onto categories, drop images from the computer */
+document.addEventListener('dragstart',e=>{const t=e.target.closest&&e.target.closest('#scr-library [data-item]');if(t){e.dataTransfer.setData('text/wf-item',t.dataset.item);e.dataTransfer.effectAllowed='move'}});
+['#lib-side','#lib-main'].forEach(sel=>{const el=$(sel);
+  el.addEventListener('dragover',e=>{const d=e.target.closest('[data-drop]');const files=[...e.dataTransfer.types].includes('Files');if(d||files){e.preventDefault();$$('.drop-on').forEach(x=>x.classList.remove('drop-on'));if(d)d.classList.add('drop-on')}});
+  el.addEventListener('dragleave',e=>{const d=e.target.closest('[data-drop]');if(d)d.classList.remove('drop-on')});
+  el.addEventListener('drop',e=>{e.preventDefault();$$('.drop-on').forEach(x=>x.classList.remove('drop-on'));const d=e.target.closest('[data-drop]'),cat=d?(d.dataset.drop==='none'?null:d.dataset.drop):undefined;
+    const id=e.dataTransfer.getData('text/wf-item');
+    if(id){const it=LIB().items.find(i=>i.id===id);if(it&&d){it.cat=cat;it.updated=Date.now();save();renderLibrary();toast(`Moved “${it.name}”`)}return}
+    if(e.dataTransfer.files.length)libUpload([...e.dataTransfer.files],cat)})});
+/* detail page */
+const libDet=$('#lib-detail');
+libDet.addEventListener('input',e=>{const t=e.target,f=t.dataset.f;if(!f)return;const it=LIB().items.find(i=>i.id===LB.sel);if(!it)return;
+  if(f==='tags')it.tags=t.value.split(',').map(x=>x.trim()).filter(Boolean);else if(f==='cat')it.cat=t.value||null;else it[f]=t.value;
+  it.updated=Date.now();save();
+  if(f==='cat'){renderLibSide();renderLibMain()}if(f==='name'){const n=$(`#lib-main [data-item="${it.id}"] .lname span`);if(n)n.textContent=it.name}});
+libDet.addEventListener('click',e=>{const t=e.target,it=LIB().items.find(i=>i.id===LB.sel);
+  if(t.closest('[data-close]')){LB.sel=null;renderLibMain();renderLibDetail();return}
+  const wm=t.closest('[data-wmode]');if(wm){LB.edit=wm.dataset.wmode==='edit';renderLibDetail();if(LB.edit)$('textarea',libDet).focus();renderLibMain();return}
+  const o=t.closest('[data-open]');if(o){e.preventDefault();openLibItem(o.dataset.open,false);return}
+  const cr=t.closest('[data-create]');if(cr){e.preventDefault();const n=cr.textContent;const nw=newLibItem({type:'page',name:n,cat:it?it.cat:realCat()});renderLibSide();openLibItem(nw.id,true);toast(`Created the page “${n}”`);return}
+  const a=t.closest('[data-lact]');if(!a||!it)return;
+  if(a.dataset.lact==='studio')openStudio({type:'open',id:it.id,name:it.name,png:it.data,project:it.project||null});
+  if(a.dataset.lact==='download')downloadDataURL(it.name,it.data);
+  if(a.dataset.lact==='dup'){const c=JSON.parse(JSON.stringify(it));Object.assign(c,{id:uid(),name:it.name+' copy',created:Date.now(),updated:Date.now()});LIB().items.push(c);save();openLibItem(c.id);renderLibSide()}
+  if(a.dataset.lact==='del')confirmBox('Delete from the library?',`Delete “${it.name}”? Cards and maps that already use it keep their copy.`,'Delete',()=>{const L=LIB();L.items=L.items.filter(x=>x!==it);LB.sel=null;save();renderLibrary()})});
+/* picker used by cards, maps and the studio */
+function libPicker(opt,cb){let cat='all',q='';const types=opt.types;
+  const m=modal(opt.title||'Choose from the library',`<div class="pick"><div class="pside"></div><div><input type="text" class="pq" placeholder="Search…" aria-label="Search the library"><div class="lgrid pgrid"></div></div></div>`,[{label:'Open the Library',act:()=>{show('library')}},{label:'Close'}]);
+  $('.modal',m).classList.add('wide');
+  const draw=()=>{const L=LIB();let a=L.items.filter(i=>types.includes(i.type));
+    if(q)a=a.filter(i=>(i.name+' '+(i.tags||[]).join(' ')).toLowerCase().includes(q));else if(cat!=='all')a=a.filter(i=>(i.cat||null)===(cat==='none'?null:cat));
+    const tree=(p,d)=>L.cats.filter(c=>(c.parent||null)===p).sort(byName).map(c=>`<button class="lnav${cat===c.id?' on':''}" data-pc="${c.id}" style="padding-left:${8+d*14}px">${FOLDER}<span class="cn">${esc(c.name)}</span></button>${tree(c.id,d+1)}`).join('');
+    $('.pside',m).innerHTML=`<button class="lnav${cat==='all'?' on':''}" data-pc="all">All files</button><button class="lnav${cat==='none'?' on':''}" data-pc="none">Not in a category</button>${tree(null,0)}`;
+    $('.pgrid',m).innerHTML=a.length?a.sort(byName).map(it=>tileHTML(it)).join(''):`<div class="empty">${L.items.some(i=>types.includes(i.type))?'Nothing here.':opt.empty||'The library has nothing of this kind yet.'}</div>`};
+  m.addEventListener('click',e=>{const pc=e.target.closest('[data-pc]');if(pc){cat=pc.dataset.pc;draw();return}const it=e.target.closest('[data-item]');if(it){const x=LIB().items.find(i=>i.id===it.dataset.item);m.remove();cb(x)}});
+  $('.pq',m).addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();draw()});draw()}
+
+/* ================= IMAGE STUDIO ================= */
+let stFrame=null,stReady=false,stQueue=[],stReturn='library';
+function stPost(m){if(!stReady){stQueue.push(m);return}stFrame.contentWindow.postMessage(Object.assign({wf:1},m),'*')}
+function openStudio(msg){if(!stFrame){stFrame=$('#st-frame');stFrame.src='pixelforge.html#wf'}if(cur!=='studio')stReturn=cur||'library';show('studio');if(msg)stPost(msg)}
+screens.studio={enter(){}};
+$('#st-back').onclick=()=>show(writerScreens.includes(stReturn)&&stReturn!=='studio'?stReturn:'library');
+$('#st-save').onclick=()=>stPost({type:'cmd-save'});
+$('#st-open').onclick=()=>libPicker({types:['image'],title:'Open from the library',empty:'No images yet. Upload some in the Library, or make one here and save it.'},it=>stPost({type:'open',id:it.id,name:it.name,png:it.data,project:it.project||null}));
+const IMG_SIZES=[['Token',512,512],['Portrait',768,1024],['Playing card',750,1050],['Item icon',256,256],['Banner',1600,600],['Map',2400,1600]];
+function newImageDialog(){const m=modal('New image',`<label class="lbl">Name</label><input type="text" id="ni-name" value="New image"><label class="lbl">Size</label>${sizePicker(IMG_SIZES,0)}<label class="f chk" style="margin-top:10px"><span>Transparent</span><input type="checkbox" id="ni-tr" checked></label>`,
+  [{label:'Cancel'},{label:'Create',cls:'pri',act:mm=>{const w=clamp(+$('#sz-w',mm).value||512,16,8000),hh=clamp(+$('#sz-h',mm).value||512,16,8000);openStudio({type:'new',w,h:hh,name:$('#ni-name',mm).value.trim()||'New image',fill:$('#ni-tr',mm).checked?null:'#ffffff'})}}]);wireSizes(m)}
+$('#st-new').onclick=newImageDialog;$('#lib-newimg').onclick=newImageDialog;
+$('#lib-studio').onclick=()=>openStudio();$('#w-studio').onclick=()=>openStudio();
+addEventListener('message',e=>{if(!stFrame||e.source!==stFrame.contentWindow||!e.data||!e.data.wf)return;const m=e.data;
+  if(m.type==='ready'){stReady=true;stQueue.splice(0).forEach(stPost)}
+  if(m.type==='pick')$('#st-open').click();
+  if(m.type==='save'){const L=LIB();let it=m.id&&L.items.find(i=>i.id===m.id);
+    if(!it)it=newLibItem({type:'image',name:m.name||'Image'});
+    Object.assign(it,{data:m.png,w:m.w,h:m.h,project:m.project||null,updated:Date.now()});save();
+    stPost({type:'saved',id:it.id,name:it.name,docKey:m.docKey,hIdx:m.hIdx});if(cur==='library')renderLibrary()}});
+
+/* ================= reuse between cards, maps and the library ================= */
+function makeComponent(f){const t=CE.tpl;let root;
+  if(f.parent){const b=JSON.parse(JSON.stringify(f.item));root=frameless(newGroup(f.item.label||'Box',f.parent.x+f.item.x,f.parent.y+f.item.y,f.item.w,f.item.h,[],'v',20));b.x=0;b.y=0;b.locked=false;root.boxes=[b]}
+  else root=JSON.parse(JSON.stringify(f.item));
+  const items=[root],seen=new Set([root.id]);
+  const addDeps=id=>t.items.forEach(o=>{if(o.anchor===id&&!seen.has(o.id)){seen.add(o.id);items.push(JSON.parse(JSON.stringify(o)));addDeps(o.id)}});
+  if(!f.parent)addDeps(root.id);
+  const ids=new Set();items.forEach(i=>{ids.add(i.id);(i.boxes||[]).forEach(b=>ids.add(b.id))});
+  if(f.parent)ids.add(f.item.id);
+  items.forEach(i=>{if(i.anchor&&!ids.has(i.anchor)){i.anchor=null;i.locked=false}if(i.type==='btn'&&i.target&&!ids.has(i.target))i.target=null});
+  const links=(t.links||[]).filter(l=>ids.has(l.from)&&ids.has(l.to)).map(l=>({...l}));
+  const assets={};items.forEach(i=>{if(i.asset&&W.assets[i.asset])assets[i.asset]=W.assets[i.asset]});
+  const bx=Math.min(...items.map(i=>i.x)),by=Math.min(...items.map(i=>i.y));items.forEach(i=>{i.x-=bx;i.y-=by});
+  return{items,links,assets,w:Math.max(...items.map(i=>i.x+i.w)),h:Math.max(...items.map(i=>i.y+i.h))}}
+function insertComponent(it,at){const c=JSON.parse(JSON.stringify(it.payload)),map={},amap={},nid=o=>map[o]||(map[o]=uid());
+  c.items.forEach(i=>{i.id=nid(i.id);(i.boxes||[]).forEach(b=>b.id=nid(b.id))});
+  c.items.forEach(i=>{if(i.anchor)i.anchor=map[i.anchor]||null;if(i.type==='btn'&&i.target)i.target=map[i.target]||null;
+    if(i.asset){if(!amap[i.asset]){amap[i.asset]='a'+uid();W.assets[amap[i.asset]]=c.assets[i.asset]}i.asset=amap[i.asset]}});
+  const p=at||viewCenterCard(),ox=R(p.x-c.w/2),oy=R(p.y-c.h/2);c.items.forEach(i=>{i.x+=ox;i.y+=oy});
+  pushHist();CE.tpl.items.push(...c.items);(c.links||[]).forEach(l=>{if(map[l.from]&&map[l.to])CE.tpl.links.push({...l,id:uid(),from:map[l.from],to:map[l.to]})});
+  recalcLinks(CE.tpl,tplAcc(CE.tpl));CE.sel=c.items[0].id;save();renderAllCard();toast(`Inserted “${it.name}”`)}
+function addImageSrc(src,nw,nh,name,at){const c=at||viewCenterCard(),s=Math.min(1,CE.tpl.w*.5/nw,CE.tpl.h*.5/nh),w=R(nw*s),hh=R(nh*s),id='a'+uid();W.assets[id]=src;
+  addItem({id:uid(),type:'image',name,asset:id,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1,flipX:false,flipY:false,locked:false,anchor:null})}
+function cardFromLibrary(){commitInline();libPicker({types:['image','component'],title:'Insert from the library',empty:'Nothing to insert yet. Select boxes on a card and click “Save to library”, or upload images in the Library.'},
+  it=>{if(it.type==='image'){const go=(w,hh)=>addImageSrc(it.data,w,hh,it.name);if(it.w&&it.h)go(it.w,it.h);else{const im=new Image();im.onload=()=>go(im.naturalWidth,im.naturalHeight);im.src=it.data}}else insertComponent(it)})}
+function saveSelToLib(){const f=CE.sel&&findItem(CE.sel);if(!f)return;commitInline();const it=f.item,isImg=it.type==='image';
+  const def=isImg?(it.name||'Image'):f.parent?(it.label||'Box'):(it.name||it.label||(it.type==='text'?plain(it.text).slice(0,40):'')||'Saved boxes');
+  modal('Save to library',`<label class="lbl">Name</label><input type="text" id="sl-name" value="${esc(def)}"><label class="lbl">Category</label>${catSelect(realCat(),'id="sl-cat"')}<p class="tip">${isImg?'Saved as an image you can reuse on other cards and maps, or edit in the Image Studio.':'Saved with its look, the connections between its number bars, and anything locked to it. Insert it on any card with “Insert from library”.'}</p>`,
+  [{label:'Cancel'},{label:'Save',cls:'pri',act:m=>{const name=$('#sl-name',m).value.trim()||def,cat=$('#sl-cat',m).value||null;
+    if(isImg){const li=newLibItem({type:'image',name,cat,data:W.assets[it.asset],w:0,h:0});const im=new Image();im.onload=()=>{li.w=im.naturalWidth;li.h=im.naturalHeight;save()};im.src=li.data}
+    else newLibItem({type:'component',name,cat,payload:makeComponent(f)});
+    toast(`Saved “${name}” to the library`)}}])}
+function mapFlatten(){const m=ME.map;const s=Math.min(1,4096/Math.max(m.w,m.h)),c=document.createElement('canvas');c.width=R(m.w*s);c.height=R(m.h*s);const x=c.getContext('2d');x.fillStyle=m.bg;x.fillRect(0,0,c.width,c.height);
+  m.layers.forEach(l=>{if(!l.visible)return;x.globalAlpha=l.opacity;if(l.type==='paint')x.drawImage(ME.canv.get(l.id),0,0,c.width,c.height);else{const im=$(`.mimg[data-id="${l.id}"]`,mWorld);if(im&&im.complete&&im.naturalWidth){x.save();x.translate((l.x+l.w/2)*s,(l.y+l.h/2)*s);x.rotate((l.rot||0)*Math.PI/180);if(l.flipX)x.scale(-1,1);x.drawImage(im,-l.w/2*s,-l.h/2*s,l.w*s,l.h*s);x.restore()}}});
+  x.globalAlpha=1;return c}
+function addMapImageSrc(src,nw,nh,name,at){const m=ME.map,r=mStage.getBoundingClientRect(),c=at||{x:(r.width/2-ME.pan.x)/ME.zoom,y:(r.height/2-ME.pan.y)/ME.zoom},s=Math.min(1,m.w*.35/nw,m.h*.35/nh),w=R(nw*s),hh=R(nh*s);
+  pushMState();const id='a'+uid();W.assets[id]=src;const l={id:uid(),type:'image',name,asset:id,x:R(c.x-w/2),y:R(c.y-hh/2),w,h:hh,rot:0,opacity:1,visible:true,flipX:false};m.layers.push(l);ME.sel=l.id;setTool('move');afterM()}
+function mapFromLibrary(){libPicker({types:['image'],title:'Add an image from the library'},it=>{const go=(w,hh)=>addMapImageSrc(it.data,w,hh,it.name);if(it.w&&it.h)go(it.w,it.h);else{const im=new Image();im.onload=()=>go(im.naturalWidth,im.naturalHeight);im.src=it.data}})}
+function libSaveImage(src,def){modal('Save to library',`<label class="lbl">Name</label><input type="text" id="sl-name" value="${esc(def)}"><label class="lbl">Category</label>${catSelect(realCat(),'id="sl-cat"')}`,
+  [{label:'Cancel'},{label:'Save',cls:'pri',act:m=>{const name=$('#sl-name',m).value.trim()||def;const li=newLibItem({type:'image',name,cat:$('#sl-cat',m).value||null,data:src,w:0,h:0});const im=new Image();im.onload=()=>{li.w=im.naturalWidth;li.h=im.naturalHeight;save()};im.src=src;toast(`Saved “${name}” to the library`)}}])}
+
 /* ================= ACCESS + ROUTING ================= */
-const writerScreens=['worlds','world','card','map'];
+const writerScreens=['worlds','world','card','map','library','studio'];
 function ghFromURL(){const m=location.hostname.match(/^([^.]+)\.github\.io$/i);if(!m)return null;const seg=location.pathname.split('/').filter(Boolean)[0];return{owner:m[1],repo:seg&&!/\.html?$/i.test(seg)?seg:m[1]+'.github.io'}}
 const GHPAGES=!!ghFromURL();
 const ghCfg=()=>LS.get('gh',{});
