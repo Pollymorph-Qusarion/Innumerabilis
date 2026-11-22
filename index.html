@@ -494,7 +494,7 @@ const ORN_NAMES={corner:'Corner',divider:'Divider',frame:'Frame',banner:'Banner'
 /* ================= model ================= */
 function newWorld(name,desc){return{id:uid(),name,desc,created:Date.now(),templates:[],maps:[],assets:{}}}
 function newBox(label,fs){return{id:uid(),type:'box',kind:'text',label,text:'',showLabel:true,x:0,y:0,w:100,h:40,color:'#2a1d10',labelColor:'#7a5a32',bg:'#ffffff',bgOpacity:.55,borderW:1,borderColor:'#8a6a3e',radius:8,font:'Spectral',size:fs,align:'left',bold:false,italic:false,locked:false}}
-function toNumber(b,v){return Object.assign(b,{kind:'number',value:v,min:null,max:null,step:1,showSign:false,style:'number',barColor:'#a8322a',align:'center'})}
+function toNumber(b,v){return Object.assign(b,{kind:'number',value:v,bgOpacity:0,borderW:0,min:null,max:null,step:1,showSign:false,style:'number',barColor:'#a8322a',align:'center'})}
 function newNumBox(label,fs){return toNumber(newBox(label,fs),0)}
 function newBtn(label,amount,target,x,y,s){return{id:uid(),type:'btn',label,amount,target,x:R(x),y:R(y),w:s,h:s,rot:0,opacity:1,font:'Inter',size:R(s*.62),color:'#ffffff',bg:'#5a3d1e',bgOpacity:1,borderColor:'#3b2a1a',borderW:0,radius:R(s*.25),bold:true,locked:false,anchor:null}}
 function frameless(g){g.showTitle=false;g.borderW=0;g.bgOpacity=0;return g}
@@ -522,8 +522,13 @@ function arrange(g,mode){const n=g.boxes.length;if(!n)return;const pad=12,gap=8,
   const cols=mode==='h'?n:mode==='v'?1:Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols);
   const bw=(g.w-2*pad-gap*(cols-1))/cols,bh=(g.h-top-pad-gap*(rows-1))/rows;
   g.boxes.forEach((b,i)=>{const c=i%cols,r=Math.floor(i/cols);b.x=R(pad+c*(bw+gap));b.y=R(top+r*(bh+gap));b.w=R(Math.max(20,bw));b.h=R(Math.max(20,bh))})}
+function migrateTpl(t){if(!t||t.v>=2)return;const imgs=new Set(t.items.filter(i=>i.type==='image').map(i=>i.id));
+  t.items.forEach(g=>g.boxes&&g.boxes.forEach(b=>{if(b.kind!=='number')return;
+    if(b.bg==='#ffffff'&&(b.bgOpacity===.55||b.bgOpacity===.25)&&(b.borderW===0||(b.borderW===1&&b.borderColor==='#8a6a3e'))){b.bgOpacity=0;b.borderW=0}
+    if(g.anchor&&imgs.has(g.anchor)&&b.label==='Number')b.showLabel=false}));t.v=2}
+function migrateWorld(w){(w.templates||[]).forEach(migrateTpl)}
 function newTemplate(name,w,hh,starter){const s=Math.min(w,hh);
-  const t={id:uid(),name,w,h:hh,bg:{color:'#f1e6cc',color2:'#d9c399',grad:true,angle:180,img:null,fit:'cover',imgOpacity:1},
+  const t={id:uid(),v:2,name,w,h:hh,bg:{color:'#f1e6cc',color2:'#d9c399',grad:true,angle:180,img:null,fit:'cover',imgOpacity:1},
     border:{w:R(s*.012),color:'#5a3d1e',r:R(s*.03)},
     layout:{preset:'none',cols:2,rows:3,margin:R(s*.05),gap:R(s*.03),color:'#ffffff',opacity:.3,radius:16,stroke:'#5a3d1e',strokeW:0},items:[]};
   if(starter)starterItems(t);return t}
@@ -596,7 +601,7 @@ $('#world-list').addEventListener('click',e=>{const a=e.target.closest('[data-ac
   if(a.dataset.act==='export')exportWorld(w);
   if(a.dataset.act==='del')confirmBox('Delete world?',`“${w.name}” and everything in it will be removed from this browser. Export it first if you want a copy.`,'Delete',()=>{DB.worlds=DB.worlds.filter(x=>x!==w);save();renderWorlds()})});
 $('#w-new').onclick=()=>modal('Create world',`<label class="lbl">World name</label><input type="text" id="nw-name" value="The Shattered Coast"><label class="lbl">Short description</label><textarea id="nw-desc" rows="3" placeholder="Optional"></textarea>`,[{label:'Cancel'},{label:'Create world',cls:'pri',act:m=>{const n=$('#nw-name',m).value.trim();if(!n)return false;const w=newWorld(n,$('#nw-desc',m).value.trim());DB.worlds.unshift(w);save();W=w;show('world')}}]);
-$('#w-import').onclick=()=>pickFiles('.json,application/json',false,fs=>{const f=fs[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const w=JSON.parse(r.result);if(!w||!w.name||!Array.isArray(w.templates)||!Array.isArray(w.maps))throw 0;w.assets=w.assets||{};if(DB.worlds.some(x=>x.id===w.id))w.id=uid();DB.worlds.unshift(w);save();renderWorlds();toast(`Imported “${w.name}”`)}catch(e){toast('That file is not a Worldforge world')}};r.readAsText(f)});
+$('#w-import').onclick=()=>pickFiles('.json,application/json',false,fs=>{const f=fs[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const w=JSON.parse(r.result);if(!w||!w.name||!Array.isArray(w.templates)||!Array.isArray(w.maps))throw 0;w.assets=w.assets||{};if(DB.worlds.some(x=>x.id===w.id))w.id=uid();migrateWorld(w);DB.worlds.unshift(w);save();renderWorlds();toast(`Imported “${w.name}”`)}catch(e){toast('That file is not a Worldforge world')}};r.readAsText(f)});
 function exportWorld(w){flush();pruneAssets(w);const json=JSON.stringify(w);const kb=Math.round(json.length/1024);
   modal('Export world',`<p>“${esc(w.name)}” is about ${kb>1024?(kb/1024).toFixed(1)+' MB':kb+' KB'}, including images and maps.</p><p class="muted">Download saves a .json file you can import later or on another computer. If the download is blocked, use Copy and paste the text into a file named <b>${esc(w.name)}.json</b>.</p>`,
   [{label:'Close'},{label:'Copy to clipboard',act:()=>{navigator.clipboard.writeText(json).then(()=>toast('World copied'),()=>toast('Copy was blocked by the browser'));return false}},
@@ -650,7 +655,7 @@ const cWins=[
   makeWin($('#c-wins'),'c-text','Text and numbers',{x:()=>Math.max(300,innerWidth-332),y:()=>112,w:320,maxh:'calc(100vh - 180px)'},cText)];
 $('#c-resetw').onclick=()=>cWins.forEach(w=>w._reset());
 const baseFs=()=>R(clamp(Math.min(CE.tpl.w,CE.tpl.h)*.028,14,40));
-function openCard(t){t.links=t.links||[];CE.tpl=t;CE.sel=null;CE.hist=[];CE.fut=[];CE.editing=null;CE.preview=false;CE.pv=null;
+function openCard(t){migrateTpl(t);t.links=t.links||[];CE.tpl=t;CE.sel=null;CE.hist=[];CE.fut=[];CE.editing=null;CE.preview=false;CE.pv=null;
   $('#scr-card').classList.remove('preview');$('#c-prev').classList.remove('on');CE.td.size=R(clamp(Math.min(t.w,t.h)*.035,14,72));show('card')}
 screens.card={enter(){$('#c-name').value=CE.tpl.name;setCTool(CE.tool);renderTools();renderCard();renderProps();renderText();renderOpts();requestAnimationFrame(fitCard)},leave(){commitInline();flush()}};
 $('#c-back').onclick=()=>show('world');
@@ -761,7 +766,7 @@ function addImages(files,at){readImages(files,(src,nw,nh,name)=>{const c=at||vie
 function addField(kind){const t=CE.tpl,c=viewCenterCard(),fs=baseFs(),f=CE.sel&&findItem(CE.sel),g=f?(f.parent||(f.item.type==='group'?f.item:null)):null;
   const mk=(l,size)=>kind==='number'?newNumBox(l,size):newBox(l,size);
   if(g){pushHist();const last=g.boxes[g.boxes.length-1];const b=mk(kind==='number'?'Number':'Field '+(g.boxes.length+1),last?last.size:fs);
-    if(last){Object.assign(b,{x:last.x,y:Math.min(g.h-30,last.y+last.h+8),w:last.w,h:last.h});['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius'].forEach(k=>b[k]=last[k])}else Object.assign(b,{x:12,y:12,w:g.w-24,h:R(fs*2.8)});
+    if(last){Object.assign(b,{x:last.x,y:Math.min(g.h-30,last.y+last.h+8),w:last.w,h:last.h});(kind==='number'?['font','color','labelColor']:['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius']).forEach(k=>b[k]=last[k])}else Object.assign(b,{x:12,y:12,w:g.w-24,h:R(fs*2.8)});
     g.boxes.push(b);CE.sel=b.id;save();renderCard();renderProps();renderText();renderOpts()}
   else{const w=R(kind==='number'?fs*6:t.w*.4),hh=R(fs*(kind==='number'?4:3.2));const g2=frameless(newGroup(kind==='number'?'Number':'Text',c.x-w/2,c.y-hh/2,w,hh,[],'v',fs));
     const b=mk(kind==='number'?'Number':'Field',fs);Object.assign(b,{x:0,y:0,w,h:hh});g2.boxes.push(b);addItem(g2);selectC(b.id);renderText()}}
@@ -917,7 +922,7 @@ cProps.addEventListener('click',e=>{
     case 'del':arr.splice(i,1);CE.sel=null;break;
     case 'selgroup':CE.sel=f.parent.id;break;
     case 'arr-v':arrange(it,'v');break;case 'arr-h':arrange(it,'h');break;case 'arr-g':arrange(it,'g');break;
-    case 'addbox':case 'addnum':{const b=a.dataset.act==='addnum'?newNumBox('Number',it.boxes[0]?it.boxes[0].size:fs):newBox('Field '+(it.boxes.length+1),it.boxes[0]?it.boxes[0].size:fs);if(it.boxes[0])['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius'].forEach(k=>b[k]=it.boxes[0][k]);it.boxes.push(b);arrange(it,it.boxes.length>4?'g':'v');break}
+    case 'addbox':case 'addnum':{const b=a.dataset.act==='addnum'?newNumBox('Number',it.boxes[0]?it.boxes[0].size:fs):newBox('Field '+(it.boxes.length+1),it.boxes[0]?it.boxes[0].size:fs);if(it.boxes[0])(a.dataset.act==='addnum'?['font','color','labelColor']:['font','color','labelColor','bg','bgOpacity','borderColor','borderW','radius']).forEach(k=>b[k]=it.boxes[0][k]);it.boxes.push(b);arrange(it,it.boxes.length>4?'g':'v');break}
     case 'ratio':{const im=new Image();im.onload=()=>{it.h=R(it.w*im.naturalHeight/im.naturalWidth);renderCard();renderProps();save()};im.src=W.assets[it.asset];break}
     case 'fill':Object.assign(it,{x:0,y:0,w:CE.tpl.w,h:CE.tpl.h,rot:0});break;
     case 'addlink':newRule(it.id);break;
@@ -925,7 +930,7 @@ cProps.addEventListener('click',e=>{
       const st=+it.step||1,mi=newBtn('−',-st,it.id,x,y,bs),pl=newBtn('+',st,it.id,x+bs+gp,y,bs);attachTo(mi,g);attachTo(pl,g);CE.tpl.items.push(mi,pl);CE.sel=pl.id;toast('Buttons added and locked to the group');break}
     case 'img-group':{const g=frameless(newGroup('Text group',it.x+it.w*.15,it.y+it.h*.3,it.w*.7,it.h*.4,['Field 1','Field 2'],'v',fs));arrange(g,'v');g.boxes.forEach(b=>{b.bgOpacity=.25;b.borderW=0});attachTo(g,it);CE.tpl.items.push(g);CE.sel=g.id;break}
     case 'img-text':{const tx=newText('Text',it.x+it.w*.1,it.y+it.h*.45);tx.text='Text';attachTo(tx,it);CE.tpl.items.push(tx);CE.sel=tx.id;break}
-    case 'img-num':{const w=R(fs*5),hh=R(fs*3.6),g=frameless(newGroup('Number',it.x+it.w/2-w/2,it.y+it.h/2-hh/2,w,hh,[],'v',fs)),b=newNumBox('Number',fs);Object.assign(b,{x:0,y:0,w,h:hh,bgOpacity:.25,borderW:0});g.boxes.push(b);attachTo(g,it);CE.tpl.items.push(g);CE.sel=b.id;break}
+    case 'img-num':{const w=R(fs*5),hh=R(fs*3.6),g=frameless(newGroup('Number',it.x+it.w/2-w/2,it.y+it.h/2-hh/2,w,hh,[],'v',fs)),b=newNumBox('Number',fs);Object.assign(b,{x:0,y:0,w,h:hh,showLabel:false});g.boxes.push(b);attachTo(g,it);CE.tpl.items.push(g);CE.sel=b.id;break}
   }recalcLinks(CE.tpl,tplAcc(CE.tpl));save();renderCard();renderProps();renderText();renderOpts()});
 
 /* --- text and numbers window (right side) --- */
@@ -1195,7 +1200,7 @@ screens.home={async enter(){try{if(location.hash)history.replaceState(null,'',lo
   L.innerHTML=Array.isArray(PINDEX)&&PINDEX.length?PINDEX.map(e=>`<article class="tile" data-id="${esc(e.id)}"><div class="thumb" data-act="open">${e.thumb?`<img src="${e.thumb}" alt="">`:MTN}</div><div class="tbody"><h3>${esc(e.name)}</h3><p>${esc(e.desc||'')}</p></div><div class="tacts"><button class="btn pri sm" data-act="open">Enter world</button></div></article>`).join('')
    :`<div class="empty"><h3 style="margin-bottom:8px">No worlds published yet</h3>When the Writer publishes a world, it will appear here.</div>`}};
 $('#h-list').addEventListener('click',async e=>{const a=e.target.closest('[data-act]'),t=e.target.closest('.tile');if(!a||!t||!PINDEX)return;const en=PINDEX.find(x=>x.id===t.dataset.id);if(!en)return;
-  toast('Opening '+en.name+'…');const w=await fetchJSON(en.file);if(!w||!Array.isArray(w.templates)){toast("Couldn't load that world. Try again in a minute.");return}w.assets=w.assets||{};PW=w;PREVIEW=false;show('pworld')});
+  toast('Opening '+en.name+'…');const w=await fetchJSON(en.file);if(!w||!Array.isArray(w.templates)){toast("Couldn't load that world. Try again in a minute.");return}w.assets=w.assets||{};migrateWorld(w);PW=w;PREVIEW=false;show('pworld')});
 $('#h-writer').onclick=()=>{location.hash='writer'};
 function previewWorld(w){PW=JSON.parse(JSON.stringify(w));PREVIEW=true;show('pworld')}
 screens.pworld={enter(){$('#pw-name').textContent=PW.name;$('#pw-desc').textContent=PW.desc||'';$('#pw-preview').hidden=!PREVIEW;$('#pw-back').textContent=PREVIEW?'Back to the Writer':'Worlds';renderPWorld()}};
@@ -1293,7 +1298,7 @@ window.addEventListener('blur',()=>{spaceDown=false;cStage.classList.remove('pan
 window.addEventListener('beforeunload',()=>{if(ME.map)makeThumb();flush()});
 
 /* ================= boot ================= */
-(async()=>{try{const d=await kv('readonly','db');if(d&&Array.isArray(d.worlds))DB=d}catch(e){setStatus('Browser storage unavailable: export your world to keep it')}
+(async()=>{try{const d=await kv('readonly','db');if(d&&Array.isArray(d.worlds)){DB=d;DB.worlds.forEach(migrateWorld)}}catch(e){setStatus('Browser storage unavailable: export your world to keep it')}
   try{const d=await kv('readonly','player');if(d&&Array.isArray(d.chars))PDB=d}catch(e){}
   window.addEventListener('hashchange',route);route()})();
 }
